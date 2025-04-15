@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Table Operations Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
+                  0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .controls {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    input,
+    select,
+    button {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background-color: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    button {
+      cursor: pointer;
+      background-color: var(--primary);
+      border: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+
+    .array-container {
+      background-color: var(--background);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Table Visualization Styles */
+    .table-visualization {
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+    }
+    .table-visualization table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .table-visualization th,
+    .table-visualization td {
+      border: 2px solid var(--border);
+      padding: 8px;
+      text-align: center;
+      min-width: 60px;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+    .table-visualization th {
+      background-color: var(--primary);
+      color: var(--background);
+      font-weight: 600;
+    }
+    .table-visualization td.fresh {
+      background-color: var(--success);
+      color: var(--background);
+      transform: translateY(-4px);
+    }
+    .table-visualization td.highlight {
+      background-color: var(--warning);
+      color: var(--background);
+      transform: translateY(-4px);
+    }
+    .message {
+      text-align: center;
+      min-height: 1.5rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .speed-slider {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Table Operations Visualizer</h1>
+      <p>Visualize table operations step by step</p>
+    </div>
+
+    <div class="controls">
+      <!-- Create Table -->
+      <div class="input-group">
+        <input type="number" id="rowsInput" placeholder="Rows" style="width:80px;">
+        <input type="number" id="colsInput" placeholder="Columns" style="width:80px;">
+        <button id="createTableBtn">
+          <i class="fas fa-plus"></i> Create Table
+        </button>
+      </div>
+      <!-- Insert Row -->
+      <div class="input-group">
+        <input type="number" id="insertRowIndex" placeholder="Row Index" style="width:80px;">
+        <input type="text" id="insertRowData" placeholder="Comma-separated values" style="flex: 1;">
+        <button id="insertRowBtn">
+          <i class="fas fa-plus"></i> Insert Row
+        </button>
+      </div>
+      <!-- Delete Row -->
+      <div class="input-group">
+        <input type="number" id="deleteRowIndex" placeholder="Row Index" style="width:80px;">
+        <button id="deleteRowBtn">
+          <i class="fas fa-trash"></i> Delete Row
+        </button>
+      </div>
+      <!-- Insert Column -->
+      <div class="input-group">
+        <input type="number" id="insertColIndex" placeholder="Col Index" style="width:80px;">
+        <input type="text" id="insertColData" placeholder="Comma-separated values for each row" style="flex: 1;">
+        <button id="insertColBtn">
+          <i class="fas fa-plus"></i> Insert Column
+        </button>
+      </div>
+      <!-- Delete Column -->
+      <div class="input-group">
+        <input type="number" id="deleteColIndex" placeholder="Col Index" style="width:80px;">
+        <button id="deleteColBtn">
+          <i class="fas fa-trash"></i> Delete Column
+        </button>
+      </div>
+      <!-- Update Cell -->
+      <div class="input-group">
+        <input type="number" id="updateRowIndex" placeholder="Row" style="width:80px;">
+        <input type="number" id="updateColIndex" placeholder="Col" style="width:80px;">
+        <input type="text" id="updateCellValue" placeholder="New Value" style="flex:1;">
+        <button id="updateCellBtn">
+          <i class="fas fa-edit"></i> Update Cell
+        </button>
+      </div>
+      <!-- Search -->
+      <div class="input-group">
+        <input type="text" id="searchValue" placeholder="Value to search" style="flex: 1;">
+        <button id="searchBtn">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </div>
+      <!-- Sort by Column -->
+      <div class="input-group">
+        <input type="number" id="sortColIndex" placeholder="Sort by Col" style="width:80px;">
+        <button id="sortBtn">
+          <i class="fas fa-sort"></i> Sort Table
+        </button>
+      </div>
+      <!-- Clear Table -->
+      <div class="input-group">
+        <button id="clearTableBtn" class="secondary">
+          <i class="fas fa-redo"></i> Clear Table
+        </button>
+      </div>
+    </div>
+
+    <div class="array-container">
+      <div class="table-visualization" id="tableVisualization"></div>
+      <div class="message" id="message"></div>
+    </div>
+
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControl">
+      <span>Animation Speed</span>
+    </div>
+
+    <div class="info" id="info"></div>
+  </div>
+
+  <script>
+    class TableVisualizer {
+      constructor() {
+        this.tableData = []; // 2D array
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        
+        // DOM Elements
+        this.rowsInput = document.getElementById("rowsInput");
+        this.colsInput = document.getElementById("colsInput");
+        this.createTableBtn = document.getElementById("createTableBtn");
+        
+        this.insertRowIndexInput = document.getElementById("insertRowIndex");
+        this.insertRowDataInput = document.getElementById("insertRowData");
+        this.insertRowBtn = document.getElementById("insertRowBtn");
+        
+        this.deleteRowIndexInput = document.getElementById("deleteRowIndex");
+        this.deleteRowBtn = document.getElementById("deleteRowBtn");
+        
+        this.insertColIndexInput = document.getElementById("insertColIndex");
+        this.insertColDataInput = document.getElementById("insertColData");
+        this.insertColBtn = document.getElementById("insertColBtn");
+        
+        this.deleteColIndexInput = document.getElementById("deleteColIndex");
+        this.deleteColBtn = document.getElementById("deleteColBtn");
+        
+        this.updateRowIndexInput = document.getElementById("updateRowIndex");
+        this.updateColIndexInput = document.getElementById("updateColIndex");
+        this.updateCellValueInput = document.getElementById("updateCellValue");
+        this.updateCellBtn = document.getElementById("updateCellBtn");
+        
+        this.searchValueInput = document.getElementById("searchValue");
+        this.searchBtn = document.getElementById("searchBtn");
+        
+        this.sortColIndexInput = document.getElementById("sortColIndex");
+        this.sortBtn = document.getElementById("sortBtn");
+        
+        this.clearTableBtn = document.getElementById("clearTableBtn");
+        
+        this.tableVisualization = document.getElementById("tableVisualization");
+        this.message = document.getElementById("message");
+        this.speedControl = document.getElementById("speedControl");
+        this.info = document.getElementById("info");
+        
+        // Event Listeners
+        this.createTableBtn.addEventListener("click", () => this.createTable());
+        this.insertRowBtn.addEventListener("click", () => this.insertRow());
+        this.deleteRowBtn.addEventListener("click", () => this.deleteRow());
+        this.insertColBtn.addEventListener("click", () => this.insertColumn());
+        this.deleteColBtn.addEventListener("click", () => this.deleteColumn());
+        this.updateCellBtn.addEventListener("click", () => this.updateCell());
+        this.searchBtn.addEventListener("click", () => this.search());
+        this.sortBtn.addEventListener("click", () => this.sortTable());
+        this.clearTableBtn.addEventListener("click", () => this.clearTable());
+        this.speedControl.addEventListener("input", (e) => {
+          this.animationDelay = 1000 / e.target.value;
+        });
+        
+        this.updateInfo();
+      }
+      
+      sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      
+      setControlsEnabled(enabled) {
+        this.createTableBtn.disabled = !enabled;
+        this.rowsInput.disabled = !enabled;
+        this.colsInput.disabled = !enabled;
+        this.insertRowIndexInput.disabled = !enabled;
+        this.insertRowDataInput.disabled = !enabled;
+        this.insertRowBtn.disabled = !enabled;
+        this.deleteRowIndexInput.disabled = !enabled;
+        this.deleteRowBtn.disabled = !enabled;
+        this.insertColIndexInput.disabled = !enabled;
+        this.insertColDataInput.disabled = !enabled;
+        this.insertColBtn.disabled = !enabled;
+        this.deleteColIndexInput.disabled = !enabled;
+        this.deleteColBtn.disabled = !enabled;
+        this.updateRowIndexInput.disabled = !enabled;
+        this.updateColIndexInput.disabled = !enabled;
+        this.updateCellValueInput.disabled = !enabled;
+        this.updateCellBtn.disabled = !enabled;
+        this.searchValueInput.disabled = !enabled;
+        this.searchBtn.disabled = !enabled;
+        this.sortColIndexInput.disabled = !enabled;
+        this.sortBtn.disabled = !enabled;
+        this.clearTableBtn.disabled = !enabled;
+      }
+      
+      updateInfo(extra = "") {
+        let rows = this.tableData.length;
+        let cols = rows > 0 ? this.tableData[0].length : 0;
+        this.info.textContent = `Table Size: ${rows} x ${cols} ${extra}`;
+      }
+      
+      createTable() {
+        let numRows = parseInt(this.rowsInput.value);
+        let numCols = parseInt(this.colsInput.value);
+        if (isNaN(numRows) || isNaN(numCols) || numRows <= 0 || numCols <= 0) {
+          this.message.textContent = "Please enter valid number of rows and columns.";
+          return;
+        }
+        this.tableData = [];
+        for (let i = 0; i < numRows; i++) {
+          let row = [];
+          for (let j = 0; j < numCols; j++) {
+            row.push("");
+          }
+          this.tableData.push(row);
+        }
+        this.renderTable();
+        this.message.textContent = "Table created.";
+        this.rowsInput.value = "";
+        this.colsInput.value = "";
+        this.updateInfo();
+      }
+      
+      renderTable(highlightCells = []) {
+        // highlightCells is an array of [row, col] pairs to highlight
+        let html = "<table><thead><tr><th></th>";
+        if (this.tableData.length > 0) {
+          for (let j = 0; j < this.tableData[0].length; j++) {
+            html += `<th>${j}</th>`;
+          }
+        }
+        html += "</tr></thead><tbody>";
+        for (let i = 0; i < this.tableData.length; i++) {
+          html += `<tr><th>${i}</th>`;
+          for (let j = 0; j < this.tableData[i].length; j++) {
+            let cellValue = this.tableData[i][j];
+            // Check if this cell should be highlighted
+            let highlightClass = "";
+            if (highlightCells.some(([r, c]) => r === i && c === j)) {
+              highlightClass = " highlight";
+            }
+            html += `<td class="${highlightClass}">${cellValue}</td>`;
+          }
+          html += "</tr>";
+        }
+        html += "</tbody></table>";
+        this.tableVisualization.innerHTML = html;
+      }
+      
+      async insertRow() {
+        if (this.isAnimating) return;
+        let index = parseInt(this.insertRowIndexInput.value);
+        let rowData = this.insertRowDataInput.value.split(",").map(x => x.trim());
+        if (isNaN(index) || index < 0 || index > this.tableData.length) {
+          this.message.textContent = "Invalid row index.";
+          return;
+        }
+        // If table exists, adjust rowData length
+        let numCols = this.tableData.length > 0 ? this.tableData[0].length : rowData.length;
+        // Fill missing cells with empty string
+        while (rowData.length < numCols) rowData.push("");
+        if (rowData.length > numCols) rowData = rowData.slice(0, numCols);
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Inserting row at index ${index}...`;
+        this.tableData.splice(index, 0, rowData);
+        this.renderTable([[index, -1]]); // highlight entire new row (we use -1 to denote row highlight)
+        await this.sleep(this.animationDelay);
+        this.renderTable();
+        this.message.textContent = `Row inserted at index ${index}.`;
+        this.insertRowIndexInput.value = "";
+        this.insertRowDataInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async deleteRow() {
+        if (this.isAnimating) return;
+        let index = parseInt(this.deleteRowIndexInput.value);
+        if (isNaN(index) || index < 0 || index >= this.tableData.length) {
+          this.message.textContent = "Invalid row index.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Deleting row at index ${index}...`;
+        // Highlight row to delete
+        this.renderTable([[index, -1]]);
+        await this.sleep(this.animationDelay);
+        this.tableData.splice(index, 1);
+        this.renderTable();
+        this.message.textContent = `Row ${index} deleted.`;
+        this.deleteRowIndexInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async insertColumn() {
+        if (this.isAnimating) return;
+        let index = parseInt(this.insertColIndexInput.value);
+        let colData = this.insertColDataInput.value.split(",").map(x => x.trim());
+        if (this.tableData.length === 0) {
+          this.message.textContent = "Create a table first.";
+          return;
+        }
+        if (isNaN(index) || index < 0 || index > this.tableData[0].length) {
+          this.message.textContent = "Invalid column index.";
+          return;
+        }
+        // Adjust colData length to number of rows
+        let numRows = this.tableData.length;
+        while (colData.length < numRows) colData.push("");
+        if (colData.length > numRows) colData = colData.slice(0, numRows);
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Inserting column at index ${index}...`;
+        for (let i = 0; i < this.tableData.length; i++) {
+          this.tableData[i].splice(index, 0, colData[i]);
+        }
+        // Highlight the new column cells
+        let highlights = [];
+        for (let i = 0; i < this.tableData.length; i++) {
+          highlights.push([i, index]);
+        }
+        this.renderTable(highlights);
+        await this.sleep(this.animationDelay);
+        this.renderTable();
+        this.message.textContent = `Column inserted at index ${index}.`;
+        this.insertColIndexInput.value = "";
+        this.insertColDataInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async deleteColumn() {
+        if (this.isAnimating) return;
+        let index = parseInt(this.deleteColIndexInput.value);
+        if (this.tableData.length === 0 || isNaN(index) || index < 0 || index >= this.tableData[0].length) {
+          this.message.textContent = "Invalid column index.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Deleting column at index ${index}...`;
+        // Highlight the column to be deleted
+        let highlights = [];
+        for (let i = 0; i < this.tableData.length; i++) {
+          highlights.push([i, index]);
+        }
+        this.renderTable(highlights);
+        await this.sleep(this.animationDelay);
+        for (let i = 0; i < this.tableData.length; i++) {
+          this.tableData[i].splice(index, 1);
+        }
+        this.renderTable();
+        this.message.textContent = `Column ${index} deleted.`;
+        this.deleteColIndexInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async updateCell() {
+        if (this.isAnimating) return;
+        let row = parseInt(this.updateRowIndexInput.value);
+        let col = parseInt(this.updateColIndexInput.value);
+        let newValue = this.updateCellValueInput.value;
+        if (isNaN(row) || isNaN(col) || row < 0 || row >= this.tableData.length || col < 0 || col >= this.tableData[0].length) {
+          this.message.textContent = "Invalid row or column index.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Updating cell [${row}, ${col}]...`;
+        this.tableData[row][col] = newValue;
+        this.renderTable([[row, col]]);
+        await this.sleep(this.animationDelay);
+        this.renderTable();
+        this.message.textContent = `Cell [${row}, ${col}] updated.`;
+        this.updateRowIndexInput.value = "";
+        this.updateColIndexInput.value = "";
+        this.updateCellValueInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+      
+      async search() {
+        if (this.isAnimating) return;
+        let value = this.searchValueInput.value;
+        if (value === "") {
+          this.message.textContent = "Enter a value to search.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Searching for "${value}"...`;
+        let highlights = [];
+        for (let i = 0; i < this.tableData.length; i++) {
+          for (let j = 0; j < this.tableData[i].length; j++) {
+            if (this.tableData[i][j] === value) {
+              highlights.push([i, j]);
+            }
+          }
+        }
+        if (highlights.length > 0) {
+          this.renderTable(highlights);
+          await this.sleep(this.animationDelay);
+          this.message.textContent = `Found "${value}" in ${highlights.length} cell(s).`;
+        } else {
+          this.message.textContent = `Value "${value}" not found.`;
+        }
+        this.searchValueInput.value = "";
+        this.renderTable();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+      
+      async sortTable() {
+        if (this.isAnimating) return;
+        let col = parseInt(this.sortColIndexInput.value);
+        if (this.tableData.length === 0 || isNaN(col) || col < 0 || col >= this.tableData[0].length) {
+          this.message.textContent = "Invalid column index.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Sorting table by column ${col}...`;
+        // Make a copy of tableData rows and sort them based on the value in the given column
+        this.tableData.sort((a, b) => {
+          let valA = a[col], valB = b[col];
+          // If numeric, compare as numbers; else, as strings
+          return (!isNaN(valA) && !isNaN(valB)) ? (Number(valA) - Number(valB)) : valA.localeCompare(valB);
+        });
+        this.renderTable();
+        await this.sleep(this.animationDelay);
+        this.message.textContent = `Table sorted by column ${col}.`;
+        this.sortColIndexInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+      
+      async clearTable() {
+        if (this.isAnimating) return;
+        this.setControlsEnabled(false);
+        this.message.textContent = "Clearing table...";
+        this.tableData = [];
+        this.renderTable();
+        await this.sleep(this.animationDelay);
+        this.message.textContent = "Table cleared.";
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+    }
+    
+    // Initialize the Table Visualizer
+    const tableVisualizer = new TableVisualizer();
+  </script>
+</body>
+</html>

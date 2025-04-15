@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decision Tree Operations Visualizer</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .controls {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    input,
+    select,
+    button {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background-color: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+    }
+    button {
+      cursor: pointer;
+      background-color: var(--primary);
+      border: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+    .array-container {
+      background-color: var(--background);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    /* Decision Tree Visualization Styles */
+    .tree-container {
+      border: 2px dashed var(--border);
+      border-radius: 0.5rem;
+      height: 500px;
+      position: relative;
+      overflow: auto;
+      margin-bottom: 1.5rem;
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+    .message {
+      text-align: center;
+      min-height: 1.5rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .speed-slider {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Decision Tree Operations Visualizer</h1>
+      <p>Visualize decision tree operations step by step</p>
+    </div>
+    
+    <div class="controls">
+      <!-- Tree Type Selection -->
+      <div class="input-group">
+        <select id="treeTypeSelect">
+          <option value="binary">Binary Decision Tree</option>
+          <option value="multiway">Multiway Decision Tree</option>
+        </select>
+      </div>
+      <!-- Insert Node -->
+      <div class="input-group">
+        <input type="text" id="parentIdInput" placeholder="Parent Node ID (leave empty for root)" style="flex:1;">
+        <input type="text" id="branchLabelInput" placeholder="Branch Label (optional)" style="flex:1;">
+        <input type="text" id="nodeTextInput" placeholder="Node Text" style="flex:1;">
+        <button id="insertNodeBtn"><i class="fas fa-plus"></i> Insert Node</button>
+      </div>
+      <!-- Delete Node -->
+      <div class="input-group">
+        <input type="text" id="deleteNodeIdInput" placeholder="Node ID to delete" style="flex:1;">
+        <button id="deleteNodeBtn"><i class="fas fa-trash"></i> Delete Node</button>
+      </div>
+      <!-- Update Node -->
+      <div class="input-group">
+        <input type="text" id="updateNodeIdInput" placeholder="Node ID to update" style="flex:1;">
+        <input type="text" id="updateNodeTextInput" placeholder="New Node Text" style="flex:1;">
+        <button id="updateNodeBtn"><i class="fas fa-edit"></i> Update Node</button>
+      </div>
+      <!-- Search Node -->
+      <div class="input-group">
+        <input type="text" id="searchNodeTextInput" placeholder="Search Node Text" style="flex:1;">
+        <button id="searchNodeBtn"><i class="fas fa-search"></i> Search Node</button>
+      </div>
+      <!-- Clear Tree -->
+      <div class="input-group">
+        <button id="clearTreeBtn" class="secondary"><i class="fas fa-redo"></i> Clear Tree</button>
+      </div>
+    </div>
+    
+    <div class="array-container">
+      <div class="tree-container">
+        <svg id="treeSVG"></svg>
+      </div>
+      <div class="message" id="message"></div>
+    </div>
+    
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControl">
+      <span>Animation Speed</span>
+    </div>
+    
+    <div class="info" id="info"></div>
+  </div>
+  
+  <script>
+    // Global node counter for unique IDs
+    let nodeIdCounter = 1;
+    
+    class DecisionTreeNode {
+      constructor(text, branchLabel = "") {
+        this.id = "N" + nodeIdCounter++;
+        this.text = text;
+        this.branchLabel = branchLabel; // Optional label on the edge from parent
+        this.children = [];
+        // Visualization properties
+        this.x = 0;
+        this.y = 0;
+        this.fresh = false;
+        this.highlight = false;
+      }
+    }
+    
+    class DecisionTreeVisualizer {
+      constructor() {
+        this.root = null;
+        this.treeType = "binary"; // "binary" or "multiway"
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        
+        // DOM Elements
+        this.treeTypeSelect = document.getElementById("treeTypeSelect");
+        this.parentIdInput = document.getElementById("parentIdInput");
+        this.branchLabelInput = document.getElementById("branchLabelInput");
+        this.nodeTextInput = document.getElementById("nodeTextInput");
+        this.insertNodeBtn = document.getElementById("insertNodeBtn");
+        this.deleteNodeIdInput = document.getElementById("deleteNodeIdInput");
+        this.deleteNodeBtn = document.getElementById("deleteNodeBtn");
+        this.updateNodeIdInput = document.getElementById("updateNodeIdInput");
+        this.updateNodeTextInput = document.getElementById("updateNodeTextInput");
+        this.updateNodeBtn = document.getElementById("updateNodeBtn");
+        this.searchNodeTextInput = document.getElementById("searchNodeTextInput");
+        this.searchNodeBtn = document.getElementById("searchNodeBtn");
+        this.clearTreeBtn = document.getElementById("clearTreeBtn");
+        this.treeSVG = document.getElementById("treeSVG");
+        this.message = document.getElementById("message");
+        this.speedControl = document.getElementById("speedControl");
+        this.info = document.getElementById("info");
+        
+        // Event Listeners
+        this.treeTypeSelect.addEventListener("change", () => this.changeTreeType());
+        this.insertNodeBtn.addEventListener("click", () => this.insertNode());
+        this.deleteNodeBtn.addEventListener("click", () => this.deleteNode());
+        this.updateNodeBtn.addEventListener("click", () => this.updateNode());
+        this.searchNodeBtn.addEventListener("click", () => this.searchNode());
+        this.clearTreeBtn.addEventListener("click", () => this.clearTree());
+        this.speedControl.addEventListener("input", (e) => {
+          this.animationDelay = 1000 / e.target.value;
+        });
+        
+        this.updateInfo();
+        this.renderTree();
+      }
+      
+      setControlsEnabled(enabled) {
+        this.treeTypeSelect.disabled = !enabled;
+        this.parentIdInput.disabled = !enabled;
+        this.branchLabelInput.disabled = !enabled;
+        this.nodeTextInput.disabled = !enabled;
+        this.insertNodeBtn.disabled = !enabled;
+        this.deleteNodeIdInput.disabled = !enabled;
+        this.deleteNodeBtn.disabled = !enabled;
+        this.updateNodeIdInput.disabled = !enabled;
+        this.updateNodeTextInput.disabled = !enabled;
+        this.updateNodeBtn.disabled = !enabled;
+        this.searchNodeTextInput.disabled = !enabled;
+        this.searchNodeBtn.disabled = !enabled;
+        this.clearTreeBtn.disabled = !enabled;
+      }
+      
+      sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      
+      updateInfo(extra = "") {
+        let size = this.getSize(this.root);
+        this.info.textContent = `Tree Type: ${this.treeType === "binary" ? "Binary" : "Multiway"} | Nodes: ${size} ${extra}`;
+      }
+      
+      changeTreeType() {
+        this.treeType = this.treeTypeSelect.value;
+        this.clearTree(true);
+        this.updateInfo();
+        this.message.textContent = `Switched to ${this.treeType === "binary" ? "Binary" : "Multiway"} Decision Tree.`;
+      }
+      
+      // Insert a new node.
+      // If parentId is empty, and tree is empty, new node becomes root.
+      // Otherwise, find parent node by ID.
+      async insertNode() {
+        if (this.isAnimating) return;
+        let parentId = this.parentIdInput.value.trim();
+        let branchLabel = this.branchLabelInput.value.trim();
+        let nodeText = this.nodeTextInput.value.trim();
+        if (nodeText === "") {
+          this.message.textContent = "Please enter node text.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Inserting node "${nodeText}"...`;
+        let newNode = new DecisionTreeNode(nodeText, branchLabel);
+        if (parentId === "") {
+          if (this.root === null) {
+            this.root = newNode;
+          } else {
+            this.message.textContent = "Root already exists. Specify a parent node ID.";
+            this.isAnimating = false;
+            this.setControlsEnabled(true);
+            return;
+          }
+        } else {
+          let parent = this.findNode(this.root, parentId);
+          if (!parent) {
+            this.message.textContent = `Parent node with ID ${parentId} not found.`;
+            this.isAnimating = false;
+            this.setControlsEnabled(true);
+            return;
+          }
+          if (this.treeType === "binary" && parent.children.length >= 2) {
+            this.message.textContent = "Binary tree: Parent already has 2 children.";
+            this.isAnimating = false;
+            this.setControlsEnabled(true);
+            return;
+          }
+          parent.children.push(newNode);
+        }
+        newNode.fresh = true;
+        this.renderTree();
+        await this.sleep(this.animationDelay);
+        newNode.fresh = false;
+        this.renderTree();
+        this.message.textContent = `Inserted node "${nodeText}" with ID ${newNode.id}.`;
+        this.parentIdInput.value = "";
+        this.branchLabelInput.value = "";
+        this.nodeTextInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      // Delete a node by its ID (and its subtree)
+      async deleteNode() {
+        if (this.isAnimating) return;
+        let nodeId = this.deleteNodeIdInput.value.trim();
+        if (nodeId === "") {
+          this.message.textContent = "Enter node ID to delete.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Deleting node ${nodeId}...`;
+        if (this.root && this.root.id === nodeId) {
+          this.root = null;
+        } else {
+          this.root = this.deleteNodeRecursive(this.root, nodeId);
+        }
+        this.renderTree();
+        await this.sleep(this.animationDelay);
+        this.message.textContent = `Deleted node ${nodeId} (if it existed).`;
+        this.deleteNodeIdInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      deleteNodeRecursive(node, nodeId) {
+        if (!node) return null;
+        node.children = node.children.filter(child => child.id !== nodeId);
+        node.children = node.children.map(child => this.deleteNodeRecursive(child, nodeId));
+        return node;
+      }
+      
+      // Update node text by ID.
+      async updateNode() {
+        if (this.isAnimating) return;
+        let nodeId = this.updateNodeIdInput.value.trim();
+        let newText = this.updateNodeTextInput.value.trim();
+        if (nodeId === "" || newText === "") {
+          this.message.textContent = "Enter node ID and new text.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Updating node ${nodeId}...`;
+        let node = this.findNode(this.root, nodeId);
+        if (node) {
+          node.text = newText;
+          node.fresh = true;
+          this.renderTree();
+          await this.sleep(this.animationDelay);
+          node.fresh = false;
+          this.renderTree();
+          this.message.textContent = `Updated node ${nodeId} to "${newText}".`;
+        } else {
+          this.message.textContent = `Node ${nodeId} not found.`;
+        }
+        this.updateNodeIdInput.value = "";
+        this.updateNodeTextInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+      
+      // Search for a node that contains a given text.
+      async searchNode() {
+        if (this.isAnimating) return;
+        let searchText = this.searchNodeTextInput.value.trim();
+        if (searchText === "") {
+          this.message.textContent = "Enter text to search for.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Searching for "${searchText}"...`;
+        let node = this.findNodeByText(this.root, searchText);
+        if (node) {
+          node.highlight = true;
+          this.renderTree();
+          await this.sleep(this.animationDelay);
+          node.highlight = false;
+          this.renderTree();
+          this.message.textContent = `Found node ${node.id} with text "${node.text}".`;
+        } else {
+          this.message.textContent = `No node found containing "${searchText}".`;
+        }
+        this.searchNodeTextInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+      
+      // Clear the tree.
+      async clearTree(skipAnimation = false) {
+        if (this.isAnimating) return;
+        this.setControlsEnabled(false);
+        this.message.textContent = "Clearing tree...";
+        if (skipAnimation) {
+          this.root = null;
+          this.renderTree();
+        } else {
+          await this.sleep(this.animationDelay);
+          this.root = null;
+          this.renderTree();
+        }
+        this.message.textContent = "Tree cleared.";
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      // Recursive function to find a node by ID.
+      findNode(node, nodeId) {
+        if (!node) return null;
+        if (node.id === nodeId) return node;
+        for (let child of node.children) {
+          let res = this.findNode(child, nodeId);
+          if (res) return res;
+        }
+        return null;
+      }
+      
+      // Recursive function to find a node by text (partial match).
+      findNodeByText(node, text) {
+        if (!node) return null;
+        if (node.text.includes(text)) return node;
+        for (let child of node.children) {
+          let res = this.findNodeByText(child, text);
+          if (res) return res;
+        }
+        return null;
+      }
+      
+      // Layout the tree (simple algorithm: y based on depth, x assigned in-order).
+      layoutTree() {
+        const spacingX = 80;
+        const spacingY = 80;
+        let xPos = 0;
+        const assignPos = (node, depth) => {
+          if (!node) return;
+          node.y = depth * spacingY + 40;
+          if (node.children.length === 0) {
+            node.x = xPos * spacingX + 40;
+            xPos++;
+          } else {
+            for (let child of node.children) {
+              assignPos(child, depth + 1);
+            }
+            let sum = 0;
+            node.children.forEach(child => sum += child.x);
+            node.x = sum / node.children.length;
+          }
+        };
+        assignPos(this.root, 0);
+      }
+      
+      // Render the decision tree in SVG.
+      renderTree() {
+        while(this.treeSVG.firstChild) {
+          this.treeSVG.removeChild(this.treeSVG.firstChild);
+        }
+        if (!this.root) return;
+        this.layoutTree();
+        const drawEdges = (node) => {
+          if (!node) return;
+          for (let child of node.children) {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", node.x);
+            line.setAttribute("y1", node.y);
+            line.setAttribute("x2", child.x);
+            line.setAttribute("y2", child.y);
+            line.setAttribute("stroke", varColor("--primary"));
+            line.setAttribute("stroke-width", 2);
+            this.treeSVG.appendChild(line);
+            if (child.branchLabel) {
+              let midX = (node.x + child.x) / 2;
+              let midY = (node.y + child.y) / 2;
+              let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+              text.setAttribute("x", midX);
+              text.setAttribute("y", midY - 5);
+              text.setAttribute("text-anchor", "middle");
+              text.setAttribute("font-size", "12px");
+              text.setAttribute("fill", varColor("--text"));
+              text.textContent = child.branchLabel;
+              this.treeSVG.appendChild(text);
+            }
+            drawEdges(child);
+          }
+        };
+        drawEdges(this.root);
+        
+        const drawNodes = (node) => {
+          if (!node) return;
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", node.x);
+          circle.setAttribute("cy", node.y);
+          circle.setAttribute("r", 20);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          let fill = varColor("--primary");
+          if (node.fresh) fill = varColor("--success");
+          else if (node.highlight) fill = varColor("--warning");
+          circle.setAttribute("fill", fill);
+          this.treeSVG.appendChild(circle);
+          
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", node.x);
+          text.setAttribute("y", node.y + 5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "14px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = node.text;
+          this.treeSVG.appendChild(text);
+          
+          // Draw node ID for reference
+          let idText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          idText.setAttribute("x", node.x - 25);
+          idText.setAttribute("y", node.y - 25);
+          idText.setAttribute("font-size", "10px");
+          idText.setAttribute("fill", varColor("--text"));
+          idText.textContent = node.id;
+          this.treeSVG.appendChild(idText);
+          
+          for (let child of node.children) {
+            drawNodes(child);
+          }
+        };
+        drawNodes(this.root);
+      }
+    }
+    
+    // Helper: get CSS variable value
+    function varColor(variable) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+    }
+    
+    // Initialize the Decision Tree Visualizer
+    const decisionTreeVisualizer = new DecisionTreeVisualizer();
+  </script>
+</body>
+</html>

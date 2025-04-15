@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Set Operations Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
+                  0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .controls {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    input,
+    select,
+    button {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background-color: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+    }
+    button {
+      cursor: pointer;
+      background-color: var(--primary);
+      border: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+    .array-container {
+      background-color: var(--background);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    /* Set Visualization Styles */
+    .set-visualization {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .set-element {
+      width: 60px;
+      height: 60px;
+      border: 2px solid var(--border);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 500;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .set-element.fresh {
+      background-color: var(--success);
+      color: var(--background);
+      transform: translateY(-4px);
+      border-color: var(--success);
+    }
+    .set-element.highlight {
+      background-color: var(--warning);
+      color: var(--background);
+      transform: translateY(-4px);
+      border-color: var(--warning);
+    }
+    .message {
+      text-align: center;
+      min-height: 1.5rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .speed-slider {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Set Operations Visualizer</h1>
+      <p>Visualize set operations step by step</p>
+    </div>
+    
+    <div class="controls">
+      <!-- Set Type Selection -->
+      <div class="input-group">
+        <select id="setTypeSelect">
+          <option value="unordered">Unordered Set</option>
+          <option value="sorted">Sorted Set</option>
+        </select>
+      </div>
+      
+      <!-- Create Set -->
+      <div class="input-group">
+        <input type="text" id="setInput" placeholder="Enter elements (e.g., 3, 5, 7, 9)" style="flex:1;">
+        <button id="createSetBtn">
+          <i class="fas fa-plus"></i> Create Set
+        </button>
+      </div>
+      
+      <!-- Add Element -->
+      <div class="input-group">
+        <input type="text" id="addElementInput" placeholder="Element to add" style="flex:1;">
+        <button id="addElementBtn">
+          <i class="fas fa-plus"></i> Add Element
+        </button>
+      </div>
+      
+      <!-- Remove Element -->
+      <div class="input-group">
+        <input type="text" id="removeElementInput" placeholder="Element to remove" style="flex:1;">
+        <button id="removeElementBtn">
+          <i class="fas fa-trash"></i> Remove Element
+        </button>
+      </div>
+      
+      <!-- Search Element -->
+      <div class="input-group">
+        <input type="text" id="searchElementInput" placeholder="Element to search" style="flex:1;">
+        <button id="searchElementBtn">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </div>
+      
+      <!-- Set Operations with Another Set -->
+      <div class="input-group">
+        <input type="text" id="otherSetInput" placeholder="Other set elements (e.g., 5, 7, 10)" style="flex:1;">
+        <select id="setOperationSelect">
+          <option value="union">Union</option>
+          <option value="intersection">Intersection</option>
+          <option value="difference">Difference</option>
+          <option value="symmetric">Symmetric Difference</option>
+        </select>
+        <button id="setOperationBtn">
+          <i class="fas fa-cogs"></i> Compute
+        </button>
+      </div>
+      
+      <!-- Clear Set -->
+      <div class="input-group">
+        <button id="clearSetBtn" class="secondary">
+          <i class="fas fa-redo"></i> Clear Set
+        </button>
+      </div>
+    </div>
+    
+    <div class="array-container">
+      <div class="set-visualization" id="setVisualization"></div>
+      <div class="message" id="message"></div>
+    </div>
+    
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControl">
+      <span>Animation Speed</span>
+    </div>
+    
+    <div class="info" id="info"></div>
+  </div>
+  
+  <script>
+    class SetVisualizer {
+      constructor() {
+        this.currentSet = []; // Array of unique string elements
+        this.setType = "unordered"; // "unordered" or "sorted"
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        
+        // DOM Elements
+        this.setTypeSelect = document.getElementById("setTypeSelect");
+        this.setInput = document.getElementById("setInput");
+        this.createSetBtn = document.getElementById("createSetBtn");
+        this.addElementInput = document.getElementById("addElementInput");
+        this.addElementBtn = document.getElementById("addElementBtn");
+        this.removeElementInput = document.getElementById("removeElementInput");
+        this.removeElementBtn = document.getElementById("removeElementBtn");
+        this.searchElementInput = document.getElementById("searchElementInput");
+        this.searchElementBtn = document.getElementById("searchElementBtn");
+        this.otherSetInput = document.getElementById("otherSetInput");
+        this.setOperationSelect = document.getElementById("setOperationSelect");
+        this.setOperationBtn = document.getElementById("setOperationBtn");
+        this.clearSetBtn = document.getElementById("clearSetBtn");
+        
+        this.setVisualization = document.getElementById("setVisualization");
+        this.message = document.getElementById("message");
+        this.speedControl = document.getElementById("speedControl");
+        this.info = document.getElementById("info");
+        
+        // Event Listeners
+        this.setTypeSelect.addEventListener("change", () => this.changeSetType());
+        this.createSetBtn.addEventListener("click", () => this.createSet());
+        this.addElementBtn.addEventListener("click", () => this.addElement());
+        this.removeElementBtn.addEventListener("click", () => this.removeElement());
+        this.searchElementBtn.addEventListener("click", () => this.searchElement());
+        this.setOperationBtn.addEventListener("click", () => this.computeSetOperation());
+        this.clearSetBtn.addEventListener("click", () => this.clearSet());
+        this.speedControl.addEventListener("input", (e) => {
+          this.animationDelay = 1000 / e.target.value;
+        });
+        
+        this.updateInfo();
+        this.visualizeSet();
+      }
+      
+      sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      
+      setControlsEnabled(enabled) {
+        this.setTypeSelect.disabled = !enabled;
+        this.setInput.disabled = !enabled;
+        this.createSetBtn.disabled = !enabled;
+        this.addElementInput.disabled = !enabled;
+        this.addElementBtn.disabled = !enabled;
+        this.removeElementInput.disabled = !enabled;
+        this.removeElementBtn.disabled = !enabled;
+        this.searchElementInput.disabled = !enabled;
+        this.searchElementBtn.disabled = !enabled;
+        this.otherSetInput.disabled = !enabled;
+        this.setOperationSelect.disabled = !enabled;
+        this.setOperationBtn.disabled = !enabled;
+        this.clearSetBtn.disabled = !enabled;
+      }
+      
+      updateInfo(extra = "") {
+        this.info.textContent = `Set Type: ${this.setType === "sorted" ? "Sorted" : "Unordered"} | Size: ${this.currentSet.length} ${extra}`;
+      }
+      
+      changeSetType() {
+        this.setType = this.setTypeSelect.value;
+        // If switching to sorted, sort current set
+        if (this.setType === "sorted") {
+          this.currentSet.sort(this.compareElements);
+        }
+        this.visualizeSet();
+        this.updateInfo();
+        this.message.textContent = `Switched to ${this.setType === "sorted" ? "Sorted" : "Unordered"} Set mode.`;
+      }
+      
+      compareElements(a, b) {
+        // Try numeric comparison if possible
+        let numA = Number(a), numB = Number(b);
+        if (!isNaN(numA) && !isNaN(numB)) {
+          return numA - numB;
+        }
+        return a.localeCompare(b);
+      }
+      
+      createSet() {
+        let input = this.setInput.value.split(',')
+          .map(x => x.trim())
+          .filter(x => x !== "");
+        // Remove duplicates
+        let unique = Array.from(new Set(input));
+        if (this.setType === "sorted") {
+          unique.sort(this.compareElements);
+        }
+        this.currentSet = unique;
+        this.visualizeSet();
+        this.message.textContent = "Set created.";
+        this.setInput.value = "";
+        this.updateInfo();
+      }
+      
+      visualizeSet(highlightIndices = []) {
+        this.setVisualization.innerHTML = "";
+        this.currentSet.forEach((elem, idx) => {
+          const div = document.createElement("div");
+          div.className = "set-element";
+          div.textContent = elem;
+          // If the index is in highlightIndices, add a highlight class
+          if (highlightIndices.includes(idx)) {
+            div.classList.add("highlight");
+          }
+          this.setVisualization.appendChild(div);
+        });
+      }
+      
+      async addElement() {
+        if (this.isAnimating) return;
+        let elem = this.addElementInput.value.trim();
+        if (elem === "") {
+          this.message.textContent = "Enter an element to add.";
+          return;
+        }
+        if (this.currentSet.includes(elem)) {
+          this.message.textContent = `Element "${elem}" already exists in the set.`;
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Adding element "${elem}"...`;
+        this.currentSet.push(elem);
+        if (this.setType === "sorted") {
+          this.currentSet.sort(this.compareElements);
+        }
+        // Highlight the new element (find its index)
+        let idx = this.currentSet.indexOf(elem);
+        this.visualizeSet([idx]);
+        await this.sleep(this.animationDelay);
+        this.visualizeSet();
+        this.message.textContent = `Element "${elem}" added.`;
+        this.addElementInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async removeElement() {
+        if (this.isAnimating) return;
+        let elem = this.removeElementInput.value.trim();
+        if (elem === "") {
+          this.message.textContent = "Enter an element to remove.";
+          return;
+        }
+        let idx = this.currentSet.indexOf(elem);
+        if (idx === -1) {
+          this.message.textContent = `Element "${elem}" not found in the set.`;
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Removing element "${elem}"...`;
+        // Highlight the element before removing
+        this.visualizeSet([idx]);
+        await this.sleep(this.animationDelay);
+        this.currentSet.splice(idx, 1);
+        this.visualizeSet();
+        this.message.textContent = `Element "${elem}" removed.`;
+        this.removeElementInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async searchElement() {
+        if (this.isAnimating) return;
+        let elem = this.searchElementInput.value.trim();
+        if (elem === "") {
+          this.message.textContent = "Enter an element to search.";
+          return;
+        }
+        let idx = this.currentSet.indexOf(elem);
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        if (idx === -1) {
+          this.message.textContent = `Element "${elem}" not found in the set.`;
+        } else {
+          this.message.textContent = `Element "${elem}" found at position ${idx}.`;
+          this.visualizeSet([idx]);
+          await this.sleep(this.animationDelay);
+          this.visualizeSet();
+        }
+        this.searchElementInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+      
+      // Compute set operations (union, intersection, difference, symmetric difference)
+      async computeSetOperation() {
+        if (this.isAnimating) return;
+        let otherInput = this.otherSetInput.value;
+        if (otherInput.trim() === "") {
+          this.message.textContent = "Enter elements for the other set.";
+          return;
+        }
+        let otherSet = Array.from(new Set(otherInput.split(",").map(x => x.trim()).filter(x => x !== "")));
+        // If current set is sorted, sort the other set as well
+        if (this.setType === "sorted") {
+          otherSet.sort(this.compareElements);
+        }
+        let operation = this.setOperationSelect.value;
+        let result;
+        switch (operation) {
+          case "union":
+            result = Array.from(new Set([...this.currentSet, ...otherSet]));
+            break;
+          case "intersection":
+            result = this.currentSet.filter(x => otherSet.includes(x));
+            break;
+          case "difference":
+            result = this.currentSet.filter(x => !otherSet.includes(x));
+            break;
+          case "symmetric":
+            let union = Array.from(new Set([...this.currentSet, ...otherSet]));
+            let intersection = this.currentSet.filter(x => otherSet.includes(x));
+            result = union.filter(x => !intersection.includes(x));
+            break;
+          default:
+            this.message.textContent = "Invalid set operation.";
+            return;
+        }
+        // If sorted, sort the result
+        if (this.setType === "sorted") {
+          result.sort(this.compareElements);
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Performing ${operation} with the other set...`;
+        // Animate by highlighting entire set briefly
+        this.visualizeSet();
+        await this.sleep(this.animationDelay);
+        this.currentSet = result;
+        this.visualizeSet();
+        this.message.textContent = `Operation ${operation} completed.`;
+        this.otherSetInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async clearSet() {
+        if (this.isAnimating) return;
+        this.setControlsEnabled(false);
+        this.message.textContent = "Clearing set...";
+        this.currentSet = [];
+        this.visualizeSet();
+        await this.sleep(this.animationDelay);
+        this.message.textContent = "Set cleared.";
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+    }
+    
+    // Initialize the Set Visualizer
+    const setVisualizer = new SetVisualizer();
+  </script>
+</body>
+</html>

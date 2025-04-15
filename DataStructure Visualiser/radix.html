@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radix Tree Operations Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
+                  0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .controls {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    input,
+    button,
+    select {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background-color: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+    }
+    button {
+      cursor: pointer;
+      background-color: var(--primary);
+      border: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+    .array-container {
+      background-color: var(--background);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    /* Radix Tree Visualization Styles */
+    .tree-container {
+      border: 2px dashed var(--border);
+      border-radius: 0.5rem;
+      height: 500px;
+      position: relative;
+      overflow: auto;
+      margin-bottom: 1.5rem;
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+    .message {
+      text-align: center;
+      min-height: 1.5rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .speed-slider {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Radix Tree Operations Visualizer</h1>
+      <p>Visualize radix tree (compressed trie) operations step by step</p>
+    </div>
+    
+    <div class="controls">
+      <!-- Operation Controls -->
+      <div class="input-group">
+        <input type="text" id="keyInput" placeholder="Key (e.g., apple)" style="flex:1;">
+        <button id="insertBtn"><i class="fas fa-plus"></i> Insert Key</button>
+      </div>
+      <div class="input-group">
+        <input type="text" id="deleteKeyInput" placeholder="Key to delete" style="flex:1;">
+        <button id="deleteBtn"><i class="fas fa-trash"></i> Delete Key</button>
+      </div>
+      <div class="input-group">
+        <input type="text" id="searchKeyInput" placeholder="Key to search" style="flex:1;">
+        <button id="searchBtn"><i class="fas fa-search"></i> Search Key</button>
+      </div>
+      <div class="input-group">
+        <input type="text" id="updateOldKeyInput" placeholder="Old key" style="width:120px;">
+        <input type="text" id="updateNewKeyInput" placeholder="New key" style="flex:1;">
+        <button id="updateBtn"><i class="fas fa-edit"></i> Update Key</button>
+      </div>
+      <div class="input-group">
+        <button id="clearBtn" class="secondary"><i class="fas fa-redo"></i> Clear Tree</button>
+      </div>
+    </div>
+    
+    <div class="array-container">
+      <div class="tree-container">
+        <svg id="treeSVG"></svg>
+      </div>
+      <div class="message" id="message"></div>
+    </div>
+    
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControl">
+      <span>Animation Speed</span>
+    </div>
+    
+    <div class="info" id="info"></div>
+  </div>
+  
+  <script>
+    // Helper function: longest common prefix of two strings.
+    function longestCommonPrefix(a, b) {
+      let minLen = Math.min(a.length, b.length);
+      let i = 0;
+      while (i < minLen && a[i] === b[i]) {
+        i++;
+      }
+      return a.substring(0, i);
+    }
+    
+    // Radix Tree Node class
+    class RadixTreeNode {
+      constructor(edge = "") {
+        this.edge = edge;         // Edge label from parent to this node.
+        this.children = [];       // Array of child nodes.
+        this.terminal = false;    // True if a key ends at this node.
+        // Visualization properties:
+        this.x = 0;
+        this.y = 0;
+        this.fresh = false;
+        this.highlight = false;
+      }
+    }
+    
+    class RadixTreeVisualizer {
+      constructor() {
+        // Initialize the tree with an empty root.
+        this.root = new RadixTreeNode("");
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        
+        // DOM Elements
+        this.keyInput = document.getElementById("keyInput");
+        this.insertBtn = document.getElementById("insertBtn");
+        this.deleteKeyInput = document.getElementById("deleteKeyInput");
+        this.deleteBtn = document.getElementById("deleteBtn");
+        this.searchKeyInput = document.getElementById("searchKeyInput");
+        this.searchBtn = document.getElementById("searchBtn");
+        this.updateOldKeyInput = document.getElementById("updateOldKeyInput");
+        this.updateNewKeyInput = document.getElementById("updateNewKeyInput");
+        this.updateBtn = document.getElementById("updateBtn");
+        this.clearBtn = document.getElementById("clearBtn");
+        this.treeSVG = document.getElementById("treeSVG");
+        this.message = document.getElementById("message");
+        this.speedControl = document.getElementById("speedControl");
+        this.info = document.getElementById("info");
+        
+        // Event Listeners
+        this.insertBtn.addEventListener("click", () => this.insert());
+        this.deleteBtn.addEventListener("click", () => this.delete());
+        this.searchBtn.addEventListener("click", () => this.search());
+        this.updateBtn.addEventListener("click", () => this.update());
+        this.clearBtn.addEventListener("click", () => this.clear());
+        this.speedControl.addEventListener("input", (e) => {
+          this.animationDelay = 1000 / e.target.value;
+        });
+        
+        this.updateInfo();
+        this.renderTree();
+      }
+      
+      setControlsEnabled(enabled) {
+        this.keyInput.disabled = !enabled;
+        this.insertBtn.disabled = !enabled;
+        this.deleteKeyInput.disabled = !enabled;
+        this.deleteBtn.disabled = !enabled;
+        this.searchKeyInput.disabled = !enabled;
+        this.searchBtn.disabled = !enabled;
+        this.updateOldKeyInput.disabled = !enabled;
+        this.updateNewKeyInput.disabled = !enabled;
+        this.updateBtn.disabled = !enabled;
+        this.clearBtn.disabled = !enabled;
+      }
+      
+      sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      
+      updateInfo(extra = "") {
+        let size = this.getSize(this.root);
+        this.info.textContent = `Radix Tree | Total Keys: ${size} ${extra}`;
+      }
+      
+      // Compute the number of terminal keys in the tree.
+      getSize(node) {
+        if (!node) return 0;
+        let count = node.terminal ? 1 : 0;
+        for (let child of node.children) {
+          count += this.getSize(child);
+        }
+        return count;
+      }
+      
+      // Insert a key into the radix tree.
+      async insert() {
+        if (this.isAnimating) return;
+        let key = this.keyInput.value;
+        if (key === "") {
+          this.message.textContent = "Enter a key to insert.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Inserting key "${key}"...`;
+        this.root = this.insertRecursive(this.root, key);
+        this.renderTree();
+        await this.sleep(this.animationDelay);
+        this.message.textContent = `Key "${key}" inserted.`;
+        this.keyInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      // Recursive insertion function.
+      insertRecursive(node, key) {
+        // If key is empty, mark current node as terminal.
+        if (key === "") {
+          node.terminal = true;
+          return node;
+        }
+        // Search among children for a common prefix.
+        for (let child of node.children) {
+          let common = longestCommonPrefix(child.edge, key);
+          if (common !== "") {
+            if (common.length < child.edge.length) {
+              // Split child.
+              let oldEdge = child.edge;
+              let remainingChild = new RadixTreeNode(oldEdge.substring(common.length));
+              remainingChild.children = child.children;
+              remainingChild.terminal = child.terminal;
+              child.edge = common;
+              child.children = [remainingChild];
+              child.terminal = false;
+            }
+            if (common.length === key.length) {
+              // Key completely matches the common part.
+              child.terminal = true;
+            } else {
+              // Continue inserting the remainder.
+              child = this.insertRecursive(child, key.substring(common.length));
+            }
+            return node;
+          }
+        }
+        // No child shares a common prefix; create a new child.
+        let newChild = new RadixTreeNode(key);
+        newChild.terminal = true;
+        newChild.fresh = true;
+        node.children.push(newChild);
+        return node;
+      }
+      
+      // Delete a key from the radix tree.
+      async delete() {
+        if (this.isAnimating) return;
+        let key = this.deleteKeyInput.value;
+        if (key === "") {
+          this.message.textContent = "Enter a key to delete.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Deleting key "${key}"...`;
+        this.root = this.deleteRecursive(this.root, key);
+        this.renderTree();
+        await this.sleep(this.animationDelay);
+        this.message.textContent = `Key "${key}" deleted (if it existed).`;
+        this.deleteKeyInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      // Recursive deletion function.
+      deleteRecursive(node, key) {
+        if (!node) return null;
+        if (key === "") {
+          node.terminal = false;
+        } else {
+          for (let i = 0; i < node.children.length; i++) {
+            let child = node.children[i];
+            if (key.startsWith(child.edge)) {
+              child = this.deleteRecursive(child, key.substring(child.edge.length));
+              // If child is not terminal and has no children, remove it.
+              if (!child.terminal && child.children.length === 0) {
+                node.children.splice(i, 1);
+                i--;
+              }
+            }
+          }
+        }
+        // If node has only one child and is not terminal, merge.
+        if (!node.terminal && node.children.length === 1 && node !== this.root) {
+          let onlyChild = node.children[0];
+          node.edge = node.edge + onlyChild.edge;
+          node.terminal = onlyChild.terminal;
+          node.children = onlyChild.children;
+        }
+        return node;
+      }
+      
+      // Search for a key in the radix tree.
+      async search() {
+        if (this.isAnimating) return;
+        let key = this.searchKeyInput.value;
+        if (key === "") {
+          this.message.textContent = "Enter a key to search.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Searching for key "${key}"...`;
+        let found = this.searchRecursive(this.root, key);
+        if (found) {
+          found.highlight = true;
+          this.renderTree();
+          await this.sleep(this.animationDelay);
+          found.highlight = false;
+          this.renderTree();
+          this.message.textContent = `Key "${key}" found.`;
+        } else {
+          this.message.textContent = `Key "${key}" not found.`;
+        }
+        this.searchKeyInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+      
+      // Recursive search: returns the terminal node that represents the key or null.
+      searchRecursive(node, key) {
+        if (!node) return null;
+        if (key === "") {
+          return node.terminal ? node : null;
+        }
+        for (let child of node.children) {
+          if (key.startsWith(child.edge)) {
+            return this.searchRecursive(child, key.substring(child.edge.length));
+          }
+        }
+        return null;
+      }
+      
+      // Update key: implement as delete old key then insert new key.
+      async update() {
+        if (this.isAnimating) return;
+        let oldKey = this.updateOldKeyInput.value;
+        let newKey = this.updateNewKeyInput.value;
+        if (oldKey === "" || newKey === "") {
+          this.message.textContent = "Enter both old key and new key.";
+          return;
+        }
+        await this.deleteKey(oldKey);
+        await this.sleep(this.animationDelay / 2);
+        await this.insertKey(newKey);
+        this.message.textContent = `Updated key "${oldKey}" to "${newKey}".`;
+        this.updateOldKeyInput.value = "";
+        this.updateNewKeyInput.value = "";
+        this.updateInfo();
+      }
+      
+      // Helper functions to call deletion and insertion without UI events.
+      async deleteKey(key) {
+        this.deleteKeyInput.value = key;
+        await this.delete();
+      }
+      async insertKey(key) {
+        this.keyInput.value = key;
+        await this.insert();
+      }
+      
+      // Clear the tree.
+      async clear() {
+        if (this.isAnimating) return;
+        this.setControlsEnabled(false);
+        this.message.textContent = "Clearing tree...";
+        await this.sleep(this.animationDelay);
+        this.root = new RadixTreeNode("");
+        this.renderTree();
+        this.message.textContent = "Tree cleared.";
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      // Layout the tree: assign x and y coordinates to each node.
+      layoutTree() {
+        const spacingY = 80, spacingX = 60;
+        let currentX = 0;
+        const assignPos = (node, depth) => {
+          if (!node) return;
+          node.y = depth * spacingY + 40;
+          if (node.children.length === 0) {
+            node.x = currentX * spacingX + 40;
+            currentX++;
+          } else {
+            for (let child of node.children) {
+              assignPos(child, depth + 1);
+            }
+            // Parent's x is average of children's x.
+            let sum = 0;
+            node.children.forEach(child => sum += child.x);
+            node.x = sum / node.children.length;
+          }
+        };
+        assignPos(this.root, 0);
+      }
+      
+      // Render the tree in the SVG.
+      renderTree() {
+        while(this.treeSVG.firstChild) {
+          this.treeSVG.removeChild(this.treeSVG.firstChild);
+        }
+        if (!this.root) return;
+        this.layoutTree();
+        const drawEdges = (node) => {
+          if (!node) return;
+          for (let child of node.children) {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", node.x);
+            line.setAttribute("y1", node.y);
+            line.setAttribute("x2", child.x);
+            line.setAttribute("y2", child.y);
+            line.setAttribute("stroke", varColor("--primary"));
+            line.setAttribute("stroke-width", 2);
+            this.treeSVG.appendChild(line);
+            // Draw branch label if exists.
+            if (child.branchLabel) {
+              let midX = (node.x + child.x) / 2;
+              let midY = (node.y + child.y) / 2;
+              let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+              text.setAttribute("x", midX);
+              text.setAttribute("y", midY - 5);
+              text.setAttribute("text-anchor", "middle");
+              text.setAttribute("font-size", "12px");
+              text.setAttribute("fill", varColor("--text"));
+              text.textContent = child.branchLabel;
+              this.treeSVG.appendChild(text);
+            }
+            drawEdges(child);
+          }
+        };
+        drawEdges(this.root);
+        
+        const drawNodes = (node) => {
+          if (!node) return;
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", node.x);
+          circle.setAttribute("cy", node.y);
+          circle.setAttribute("r", 20);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          let fill = varColor("--primary");
+          if (node.fresh) fill = varColor("--success");
+          else if (node.highlight) fill = varColor("--warning");
+          circle.setAttribute("fill", fill);
+          this.treeSVG.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", node.x);
+          text.setAttribute("y", node.y + 5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "14px");
+          text.setAttribute("fill", varColor("--text"));
+          // For non-root nodes, display the edge label; for root, show "root"
+          text.textContent = (node === this.root) ? "root" : node.edge + (node.terminal ? "*" : "");
+          this.treeSVG.appendChild(text);
+          for (let child of node.children) {
+            drawNodes(child);
+          }
+        };
+        drawNodes(this.root);
+      }
+    }
+    
+    // Helper: get CSS variable value.
+    function varColor(variable) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+    }
+    
+    // Initialize the Radix Tree Visualizer
+    const radixTreeVisualizer = new RadixTreeVisualizer();
+  </script>
+</body>
+</html>

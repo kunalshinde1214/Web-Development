@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hashtable Operations Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
+                  0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .controls {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    input,
+    select,
+    button {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background-color: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+    }
+    button {
+      cursor: pointer;
+      background-color: var(--primary);
+      border: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+    .array-container {
+      background-color: var(--background);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    /* Hashtable Visualization Styles */
+    .hashtable-visualization {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .bucket {
+      border: 2px solid var(--border);
+      border-radius: 0.5rem;
+      width: 100px;
+      min-height: 80px;
+      padding: 5px;
+      position: relative;
+      transition: all 0.3s ease;
+      background-color: var(--background);
+    }
+    .bucket.fresh {
+      border-color: var(--success);
+      background-color: var(--success);
+      color: var(--background);
+      transform: translateY(-4px);
+    }
+    .bucket.highlight {
+      border-color: var(--warning);
+      background-color: var(--warning);
+      color: var(--background);
+      transform: translateY(-4px);
+    }
+    .bucket .bucket-index {
+      position: absolute;
+      top: -1.2rem;
+      font-size: 0.75rem;
+      color: #64748b;
+      left: 5px;
+    }
+    .chain-element {
+      background-color: var(--primary);
+      color: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+      padding: 2px 4px;
+      margin-top: 4px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    .chain-element.fresh {
+      background-color: var(--success);
+      border-color: var(--success);
+    }
+    .chain-element.highlight {
+      background-color: var(--warning);
+      border-color: var(--warning);
+    }
+    /* For open addressing, each bucket is a cell */
+    .cell {
+      border: 2px solid var(--border);
+      border-radius: 0.5rem;
+      width: 100px;
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      transition: all 0.3s ease;
+      background-color: var(--background);
+    }
+    .cell.fresh {
+      border-color: var(--success);
+      background-color: var(--success);
+      color: var(--background);
+      transform: translateY(-4px);
+    }
+    .cell.highlight {
+      border-color: var(--warning);
+      background-color: var(--warning);
+      color: var(--background);
+      transform: translateY(-4px);
+    }
+    .cell .cell-index {
+      position: absolute;
+      top: -1.2rem;
+      font-size: 0.75rem;
+      color: #64748b;
+      left: 5px;
+    }
+    .cell .cell-content {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    .message {
+      text-align: center;
+      min-height: 1.5rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .speed-slider {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Hashtable Operations Visualizer</h1>
+      <p>Visualize hashtable operations step by step</p>
+    </div>
+    <div class="controls">
+      <!-- Hashtable Type Selection -->
+      <div class="input-group">
+        <select id="tableTypeSelect">
+          <option value="separate">Separate Chaining</option>
+          <option value="open">Open Addressing (Linear Probing)</option>
+        </select>
+      </div>
+      <!-- Insert / Update Operation -->
+      <div class="input-group">
+        <input type="text" id="keyInput" placeholder="Key" style="flex:1;">
+        <input type="text" id="valueInput" placeholder="Value" style="flex:1;">
+        <button id="insertBtn">
+          <i class="fas fa-plus"></i> Insert/Update
+        </button>
+      </div>
+      <!-- Delete Operation -->
+      <div class="input-group">
+        <input type="text" id="deleteKeyInput" placeholder="Key to delete" style="flex:1;">
+        <button id="deleteBtn">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+      <!-- Search Operation -->
+      <div class="input-group">
+        <input type="text" id="searchKeyInput" placeholder="Key to search" style="flex:1;">
+        <button id="searchBtn">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </div>
+      <!-- Clear Operation -->
+      <div class="input-group">
+        <button id="clearBtn" class="secondary">
+          <i class="fas fa-redo"></i> Clear Hashtable
+        </button>
+      </div>
+    </div>
+    <div class="array-container">
+      <div class="hashtable-visualization" id="hashtableVisualization"></div>
+      <div class="message" id="message"></div>
+    </div>
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControl">
+      <span>Animation Speed</span>
+    </div>
+    <div class="info" id="info"></div>
+  </div>
+  
+  <script>
+    class HashtableVisualizer {
+      constructor() {
+        this.capacity = 10;
+        // table will be an array of length capacity
+        // For "separate" (chaining), each cell is an array (chain)
+        // For "open", each cell is either null or an object { key, value }
+        this.table = new Array(this.capacity).fill(null);
+        this.tableType = "separate"; // "separate" or "open"
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        
+        // DOM Elements
+        this.tableTypeSelect = document.getElementById("tableTypeSelect");
+        this.keyInput = document.getElementById("keyInput");
+        this.valueInput = document.getElementById("valueInput");
+        this.insertBtn = document.getElementById("insertBtn");
+        this.deleteKeyInput = document.getElementById("deleteKeyInput");
+        this.deleteBtn = document.getElementById("deleteBtn");
+        this.searchKeyInput = document.getElementById("searchKeyInput");
+        this.searchBtn = document.getElementById("searchBtn");
+        this.clearBtn = document.getElementById("clearBtn");
+        this.hashtableVisualization = document.getElementById("hashtableVisualization");
+        this.message = document.getElementById("message");
+        this.speedControl = document.getElementById("speedControl");
+        this.info = document.getElementById("info");
+        
+        // Event Listeners
+        this.tableTypeSelect.addEventListener("change", () => this.changeTableType());
+        this.insertBtn.addEventListener("click", () => this.insert());
+        this.deleteBtn.addEventListener("click", () => this.delete());
+        this.searchBtn.addEventListener("click", () => this.search());
+        this.clearBtn.addEventListener("click", () => this.clear());
+        this.speedControl.addEventListener("input", (e) => {
+          this.animationDelay = 1000 / e.target.value;
+        });
+        
+        this.initializeTable();
+        this.updateInfo();
+        this.renderTable();
+      }
+      
+      initializeTable() {
+        // Initialize table based on type
+        if (this.tableType === "separate") {
+          // For separate chaining, each bucket is an empty array
+          this.table = Array.from({ length: this.capacity }, () => []);
+        } else {
+          // For open addressing, each cell is null
+          this.table = new Array(this.capacity).fill(null);
+        }
+      }
+      
+      hash(key) {
+        // Simple hash: sum of char codes modulo capacity
+        let hash = 0;
+        for (let i = 0; i < key.length; i++) {
+          hash += key.charCodeAt(i);
+        }
+        return hash % this.capacity;
+      }
+      
+      async insert() {
+        if (this.isAnimating) return;
+        let key = this.keyInput.value.trim();
+        let value = this.valueInput.value.trim();
+        if (key === "" || value === "") {
+          this.message.textContent = "Please enter both key and value.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Inserting [${key}: ${value}]...`;
+        let index = this.hash(key);
+        if (this.tableType === "separate") {
+          // Check if key exists in chain; if so, update
+          let chain = this.table[index];
+          let found = chain.find(item => item.key === key);
+          if (found) {
+            found.value = value;
+            await this.animateBucket(index, "highlight");
+            this.message.textContent = `Updated key ${key} with new value ${value}.`;
+          } else {
+            chain.push({ key, value, fresh: true, highlight: false });
+            await this.animateBucket(index, "fresh");
+            this.message.textContent = `Inserted key ${key} with value ${value}.`;
+          }
+        } else {
+          // Open addressing with linear probing
+          let i = index;
+          let inserted = false;
+          let firstAvailable = -1;
+          for (let count = 0; count < this.capacity; count++) {
+            let pos = (i + count) % this.capacity;
+            let cell = this.table[pos];
+            if (cell === null) {
+              if (firstAvailable === -1) {
+                firstAvailable = pos;
+              }
+            } else if (cell.key === key) {
+              // Update existing key
+              this.table[pos].value = value;
+              await this.animateCell(pos, "highlight");
+              this.message.textContent = `Updated key ${key} with new value ${value}.`;
+              inserted = true;
+              break;
+            }
+          }
+          if (!inserted) {
+            if (firstAvailable === -1) {
+              this.message.textContent = "Hashtable Overflow!";
+              this.isAnimating = false;
+              this.setControlsEnabled(true);
+              return;
+            }
+            this.table[firstAvailable] = { key, value, fresh: true, highlight: false };
+            await this.animateCell(firstAvailable, "fresh");
+            this.message.textContent = `Inserted key ${key} with value ${value}.`;
+          }
+        }
+        this.keyInput.value = "";
+        this.valueInput.value = "";
+        this.renderTable();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async delete() {
+        if (this.isAnimating) return;
+        let key = this.deleteKeyInput.value.trim();
+        if (key === "") {
+          this.message.textContent = "Please enter a key to delete.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Deleting key ${key}...`;
+        let index = this.hash(key);
+        let deleted = false;
+        if (this.tableType === "separate") {
+          let chain = this.table[index];
+          let initialLength = chain.length;
+          this.table[index] = chain.filter(item => item.key !== key);
+          if (this.table[index].length < initialLength) {
+            await this.animateBucket(index, "highlight");
+            this.message.textContent = `Deleted key ${key}.`;
+            deleted = true;
+          }
+        } else {
+          // Open addressing: linear probing to find key
+          let i = index;
+          for (let count = 0; count < this.capacity; count++) {
+            let pos = (i + count) % this.capacity;
+            let cell = this.table[pos];
+            if (cell && cell.key === key) {
+              this.table[pos] = null;
+              await this.animateCell(pos, "highlight");
+              this.message.textContent = `Deleted key ${key}.`;
+              deleted = true;
+              break;
+            }
+          }
+        }
+        if (!deleted) {
+          this.message.textContent = `Key ${key} not found.`;
+        }
+        this.deleteKeyInput.value = "";
+        this.renderTable();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async search() {
+        if (this.isAnimating) return;
+        let key = this.searchKeyInput.value.trim();
+        if (key === "") {
+          this.message.textContent = "Please enter a key to search.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Searching for key ${key}...`;
+        let index = this.hash(key);
+        let found = null;
+        if (this.tableType === "separate") {
+          let chain = this.table[index];
+          found = chain.find(item => item.key === key);
+          if (found) {
+            await this.animateBucket(index, "highlight");
+            this.message.textContent = `Found key ${key} with value ${found.value}.`;
+          }
+        } else {
+          let i = index;
+          for (let count = 0; count < this.capacity; count++) {
+            let pos = (i + count) % this.capacity;
+            let cell = this.table[pos];
+            if (cell && cell.key === key) {
+              found = cell;
+              await this.animateCell(pos, "highlight");
+              this.message.textContent = `Found key ${key} with value ${cell.value}.`;
+              break;
+            }
+          }
+        }
+        if (!found) {
+          this.message.textContent = `Key ${key} not found.`;
+        }
+        this.searchKeyInput.value = "";
+        this.renderTable();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+      
+      clear() {
+        if (this.isAnimating) return;
+        this.setControlsEnabled(false);
+        this.message.textContent = "Clearing hashtable...";
+        if (this.tableType === "separate") {
+          this.table = Array.from({ length: this.capacity }, () => []);
+        } else {
+          this.table = new Array(this.capacity).fill(null);
+        }
+        this.renderTable();
+        this.message.textContent = "Hashtable cleared.";
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      // --- Visualization Helpers ---
+      renderTable() {
+        this.hashtableVisualization.innerHTML = "";
+        for (let i = 0; i < this.capacity; i++) {
+          if (this.tableType === "separate") {
+            let bucket = document.createElement("div");
+            bucket.className = "bucket";
+            bucket.setAttribute("data-index", i);
+            let indexLabel = document.createElement("div");
+            indexLabel.className = "bucket-index";
+            indexLabel.textContent = i;
+            bucket.appendChild(indexLabel);
+            // Show each element in the chain
+            let chain = this.table[i];
+            chain.forEach(item => {
+              let elem = document.createElement("div");
+              elem.className = "chain-element";
+              elem.textContent = `${item.key}:${item.value}`;
+              bucket.appendChild(elem);
+            });
+            this.hashtableVisualization.appendChild(bucket);
+          } else {
+            let cell = document.createElement("div");
+            cell.className = "cell";
+            cell.setAttribute("data-index", i);
+            let indexLabel = document.createElement("div");
+            indexLabel.className = "cell-index";
+            indexLabel.textContent = i;
+            cell.appendChild(indexLabel);
+            let content = document.createElement("div");
+            content.className = "cell-content";
+            let entry = this.table[i];
+            if (entry) {
+              content.textContent = `${entry.key}:${entry.value}`;
+            }
+            cell.appendChild(content);
+            this.hashtableVisualization.appendChild(cell);
+          }
+        }
+      }
+      
+      // Animate a bucket in separate chaining
+      async animateBucket(bucketIndex, styleClass) {
+        let buckets = document.getElementsByClassName("bucket");
+        if (bucketIndex < buckets.length) {
+          let bucket = buckets[bucketIndex];
+          bucket.classList.add(styleClass);
+          await this.sleep(this.animationDelay);
+          bucket.classList.remove(styleClass);
+        }
+      }
+      
+      // Animate a cell in open addressing
+      async animateCell(cellIndex, styleClass) {
+        let cells = document.getElementsByClassName("cell");
+        if (cellIndex < cells.length) {
+          let cell = cells[cellIndex];
+          cell.classList.add(styleClass);
+          await this.sleep(this.animationDelay);
+          cell.classList.remove(styleClass);
+        }
+      }
+      
+      changeTableType() {
+        this.tableType = this.tableTypeSelect.value;
+        this.initializeTable();
+        this.renderTable();
+        this.message.textContent = `Switched to ${this.tableType === "separate" ? "Separate Chaining" : "Open Addressing"} mode.`;
+        this.updateInfo();
+      }
+      
+      updateInfo(extra = "") {
+        let size;
+        if (this.tableType === "separate") {
+          // Sum of lengths of chains
+          size = this.table.reduce((acc, chain) => acc + chain.length, 0);
+        } else {
+          size = this.table.filter(x => x !== null).length;
+        }
+        this.info.textContent = `Capacity: ${this.capacity} | Size: ${size} | Mode: ${this.tableType === "separate" ? "Separate Chaining" : "Open Addressing"} ${extra}`;
+      }
+      
+      setControlsEnabled(enabled) {
+        this.tableTypeSelect.disabled = !enabled;
+        this.keyInput.disabled = !enabled;
+        this.valueInput.disabled = !enabled;
+        this.insertBtn.disabled = !enabled;
+        this.deleteKeyInput.disabled = !enabled;
+        this.deleteBtn.disabled = !enabled;
+        this.searchKeyInput.disabled = !enabled;
+        this.searchBtn.disabled = !enabled;
+        this.clearBtn.disabled = !enabled;
+      }
+    }
+    
+    // Initialize the Hashtable Visualizer
+    const hashtableVisualizer = new HashtableVisualizer();
+  </script>
+</body>
+</html>

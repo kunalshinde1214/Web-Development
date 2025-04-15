@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Data Structure Operations Visualizer</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    /* Common Design */
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--background); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 2rem; }
+    .container { max-width: 1200px; width: 100%; background-color: var(--card-bg); border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
+    .header { text-align: center; margin-bottom: 2rem; }
+    .header h1 { font-size: 2rem; margin-bottom: 0.5rem; background: linear-gradient(45deg, var(--primary), #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .tabs { display: flex; justify-content: center; margin-bottom: 1rem; }
+    .tab-button { padding: 0.75rem 1rem; margin: 0 0.5rem; border: 1px solid var(--border); border-radius: 0.5rem; background-color: var(--background); color: var(--text); cursor: pointer; }
+    .tab-button.active { background-color: var(--primary); }
+    .visualizer { display: none; }
+    .visualizer.active { display: block; }
+    .controls { display: grid; gap: 1rem; margin-bottom: 1rem; }
+    .input-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    input, select, button { padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; background-color: var(--background); color: var(--text); font-size: 1rem; outline: none; transition: all 0.3s ease; }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
+    button { cursor: pointer; background-color: var(--primary); border: none; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.secondary { background-color: transparent; border: 1px solid var(--primary); }
+    .array-container { background-color: var(--background); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+    .message { text-align: center; min-height: 1.5rem; font-size: 1.1rem; color: #94a3b8; }
+    .info { text-align: center; color: #64748b; font-size: 0.875rem; margin-top: 1rem; }
+    .speed-control { display: flex; align-items: center; gap: 1rem; justify-content: center; margin-top: 1rem; }
+    .speed-slider { width: 200px; }
+    /* Specific visualizer containers */
+    .tree-container { border: 2px dashed var(--border); border-radius: 0.5rem; height: 500px; position: relative; overflow: auto; margin-bottom: 1.5rem; }
+    .table-visualization table { border-collapse: collapse; width: 100%; }
+    .table-visualization th, .table-visualization td { border: 2px solid var(--border); padding: 8px; text-align: center; min-width: 60px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Multi-Data Structure Operations Visualizer</h1>
+      <p>Explore operations on Sparse Matrix, Adjacency Matrix, Trie, Segment Tree, Hypergraph, and Heap</p>
+    </div>
+    <div class="tabs">
+      <button class="tab-button active" data-tab="sparseMatrix">Sparse Matrix</button>
+      <button class="tab-button" data-tab="adjacencyMatrix">Adjacency Matrix</button>
+      <button class="tab-button" data-tab="trie">Trie</button>
+      <button class="tab-button" data-tab="segmentTree">Segment Tree</button>
+      <button class="tab-button" data-tab="hypergraph">Hypergraph</button>
+      <button class="tab-button" data-tab="heap">Heap</button>
+    </div>
+    <!-- Sparse Matrix Visualizer -->
+    <div id="sparseMatrix" class="visualizer active">
+      <div class="controls">
+        <div class="input-group">
+          <input type="text" id="sparseInput" placeholder="Enter nonzero elements as row:col:value, e.g., 0:1:5, 2:3:10" style="flex:1;">
+          <button id="createSparseBtn"><i class="fas fa-plus"></i> Create Sparse Matrix</button>
+        </div>
+        <div class="input-group">
+          <input type="text" id="sparseUpdateInput" placeholder="Update format row:col:newValue" style="flex:1;">
+          <button id="updateSparseBtn"><i class="fas fa-edit"></i> Update Element</button>
+        </div>
+        <div class="input-group">
+          <input type="text" id="sparseSearchInput" placeholder="Search by row:col" style="flex:1;">
+          <button id="searchSparseBtn"><i class="fas fa-search"></i> Search Element</button>
+        </div>
+        <div class="input-group">
+          <button id="clearSparseBtn" class="secondary"><i class="fas fa-redo"></i> Clear Matrix</button>
+        </div>
+      </div>
+      <div class="array-container" id="sparseVisualization"></div>
+      <div class="message" id="sparseMessage"></div>
+    </div>
+    <!-- Adjacency Matrix Visualizer -->
+    <div id="adjacencyMatrix" class="visualizer">
+      <div class="controls">
+        <div class="input-group">
+          <input type="number" id="graphNodesInput" placeholder="Number of Nodes" style="width:120px;">
+          <button id="createAdjacencyBtn"><i class="fas fa-plus"></i> Create Matrix</button>
+        </div>
+        <div class="input-group">
+          <input type="text" id="edgeInput" placeholder="Enter edge as from:to (e.g., 0:1)" style="flex:1;">
+          <button id="addEdgeBtn"><i class="fas fa-link"></i> Add Edge</button>
+        </div>
+        <div class="input-group">
+          <button id="clearAdjacencyBtn" class="secondary"><i class="fas fa-redo"></i> Clear Matrix</button>
+        </div>
+      </div>
+      <div class="array-container table-visualization" id="adjacencyVisualization"></div>
+      <div class="message" id="adjacencyMessage"></div>
+    </div>
+    <!-- Trie Visualizer -->
+    <div id="trie" class="visualizer">
+      <div class="controls">
+        <div class="input-group">
+          <input type="text" id="trieInput" placeholder="Enter words (comma-separated)" style="flex:1;">
+          <button id="createTrieBtn"><i class="fas fa-plus"></i> Create Trie</button>
+        </div>
+        <div class="input-group">
+          <input type="text" id="trieSearchInput" placeholder="Search word" style="flex:1;">
+          <button id="searchTrieBtn"><i class="fas fa-search"></i> Search Trie</button>
+        </div>
+        <div class="input-group">
+          <button id="clearTrieBtn" class="secondary"><i class="fas fa-redo"></i> Clear Trie</button>
+        </div>
+      </div>
+      <div class="array-container">
+        <div class="tree-container" id="trieVisualization">
+          <svg id="trieSVG"></svg>
+        </div>
+      </div>
+      <div class="message" id="trieMessage"></div>
+    </div>
+    <!-- Segment Tree Visualizer -->
+    <div id="segmentTree" class="visualizer">
+      <div class="controls">
+        <div class="input-group">
+          <input type="text" id="segmentArrayInput" placeholder="Enter array (comma-separated)" style="flex:1;">
+          <button id="createSegmentBtn"><i class="fas fa-plus"></i> Create Segment Tree</button>
+        </div>
+        <div class="input-group">
+          <input type="number" id="segmentUpdateIndex" placeholder="Index" style="width:80px;">
+          <input type="text" id="segmentUpdateValue" placeholder="New Value" style="flex:1;">
+          <button id="updateSegmentBtn"><i class="fas fa-edit"></i> Update</button>
+        </div>
+        <div class="input-group">
+          <button id="clearSegmentBtn" class="secondary"><i class="fas fa-redo"></i> Clear Tree</button>
+        </div>
+      </div>
+      <div class="array-container">
+        <div class="tree-container" id="segmentVisualization">
+          <svg id="segmentSVG"></svg>
+        </div>
+      </div>
+      <div class="message" id="segmentMessage"></div>
+    </div>
+    <!-- Hypergraph Visualizer -->
+    <div id="hypergraph" class="visualizer">
+      <div class="controls">
+        <div class="input-group">
+          <input type="text" id="hyperNodesInput" placeholder="Enter node labels (comma-separated)" style="flex:1;">
+          <button id="createHypergraphBtn"><i class="fas fa-plus"></i> Create Hypergraph</button>
+        </div>
+        <div class="input-group">
+          <input type="text" id="hyperEdgeInput" placeholder="Enter hyperedge as node indices (e.g., 0,2,3)" style="flex:1;">
+          <button id="addHyperedgeBtn"><i class="fas fa-link"></i> Add Hyperedge</button>
+        </div>
+        <div class="input-group">
+          <button id="clearHypergraphBtn" class="secondary"><i class="fas fa-redo"></i> Clear Hypergraph</button>
+        </div>
+      </div>
+      <div class="array-container">
+        <div class="tree-container" id="hypergraphVisualization">
+          <svg id="hypergraphSVG"></svg>
+        </div>
+      </div>
+      <div class="message" id="hypergraphMessage"></div>
+    </div>
+    <!-- Heap Visualizer -->
+    <div id="heap" class="visualizer">
+      <div class="controls">
+        <div class="input-group">
+          <input type="text" id="heapArrayInput" placeholder="Enter array (comma-separated)" style="flex:1;">
+          <button id="createHeapBtn"><i class="fas fa-plus"></i> Create Heap</button>
+        </div>
+        <div class="input-group">
+          <input type="text" id="heapInsertInput" placeholder="Value to insert" style="flex:1;">
+          <button id="heapInsertBtn"><i class="fas fa-arrow-right"></i> Insert</button>
+        </div>
+        <div class="input-group">
+          <button id="heapDeleteBtn"><i class="fas fa-trash"></i> Delete Top</button>
+        </div>
+        <div class="input-group">
+          <button id="clearHeapBtn" class="secondary"><i class="fas fa-redo"></i> Clear Heap</button>
+        </div>
+      </div>
+      <div class="array-container">
+        <div class="tree-container" id="heapVisualization">
+          <svg id="heapSVG"></svg>
+        </div>
+      </div>
+      <div class="message" id="heapMessage"></div>
+    </div>
+    
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControlGlobal">
+      <span>Animation Speed</span>
+    </div>
+    
+    <div class="info" id="globalInfo"></div>
+  </div>
+  
+  <script>
+    // Tab switching
+    const tabButtons = document.querySelectorAll(".tab-button");
+    const visualizers = document.querySelectorAll(".visualizer");
+    tabButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        const target = button.getAttribute("data-tab");
+        visualizers.forEach(vis => {
+          vis.classList.toggle("active", vis.id === target);
+        });
+        tabButtons.forEach(btn => btn.classList.toggle("active", btn === button));
+      });
+    });
+    
+    // Global speed control updates individual visualizers.
+    const speedControlGlobal = document.getElementById("speedControlGlobal");
+    speedControlGlobal.addEventListener("input", (e) => {
+      const newDelay = 1000 / e.target.value;
+      if (sparseMatrixVisualizer) sparseMatrixVisualizer.animationDelay = newDelay;
+      if (adjacencyMatrixVisualizer) adjacencyMatrixVisualizer.animationDelay = newDelay;
+      if (trieVisualizer) trieVisualizer.animationDelay = newDelay;
+      if (segmentTreeVisualizer) segmentTreeVisualizer.animationDelay = newDelay;
+      if (hypergraphVisualizer) hypergraphVisualizer.animationDelay = newDelay;
+      if (heapVisualizer) heapVisualizer.animationDelay = newDelay;
+    });
+    
+    /* ---------------- Sparse Matrix Visualizer ---------------- */
+    class SparseMatrixVisualizer {
+      constructor() {
+        this.matrix = {}; // keys as "row,col"
+        this.rows = 0;
+        this.cols = 0;
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.input = document.getElementById("sparseInput");
+        this.createBtn = document.getElementById("createSparseBtn");
+        this.updateBtn = document.getElementById("updateSparseBtn");
+        this.searchBtn = document.getElementById("searchSparseBtn");
+        this.clearBtn = document.getElementById("clearSparseBtn");
+        this.visualization = document.getElementById("sparseVisualization");
+        this.message = document.getElementById("sparseMessage");
+        
+        this.createBtn.addEventListener("click", () => this.createMatrix());
+        this.updateBtn.addEventListener("click", () => this.updateElement());
+        this.searchBtn.addEventListener("click", () => this.searchElement());
+        this.clearBtn.addEventListener("click", () => this.clearMatrix());
+        this.updateInfo();
+      }
+      
+      updateInfo() {
+        document.getElementById("globalInfo").textContent = `Sparse Matrix | Dimensions: ${this.rows} x ${this.cols}`;
+      }
+      
+      renderMatrix(highlights = []) {
+        let html = "<table><tr><th></th>";
+        for (let j = 0; j < this.cols; j++) html += `<th>${j}</th>`;
+        html += "</tr>";
+        for (let i = 0; i < this.rows; i++) {
+          html += `<tr><th>${i}</th>`;
+          for (let j = 0; j < this.cols; j++) {
+            let key = i + "," + j;
+            let val = this.matrix[key] || "";
+            let cls = highlights.some(([r, c]) => r === i && c === j) ? "highlight" : "";
+            html += `<td class="${cls}">${val}</td>`;
+          }
+          html += "</tr>";
+        }
+        html += "</table>";
+        this.visualization.innerHTML = html;
+      }
+      
+      async createMatrix() {
+        let input = this.input.value;
+        if (!input) {
+          this.message.textContent = "Enter nonzero elements as row:col:value";
+          return;
+        }
+        this.matrix = {};
+        this.rows = 0;
+        this.cols = 0;
+        let entries = input.split(",").map(x => x.trim()).filter(x => x);
+        entries.forEach(entry => {
+          let parts = entry.split(":");
+          if (parts.length === 3) {
+            let r = parseInt(parts[0]), c = parseInt(parts[1]), v = parts[2];
+            this.matrix[r + "," + c] = v;
+            this.rows = Math.max(this.rows, r + 1);
+            this.cols = Math.max(this.cols, c + 1);
+          }
+        });
+        this.renderMatrix();
+        this.message.textContent = "Sparse matrix created.";
+        this.input.value = "";
+        this.updateInfo();
+      }
+      
+      async updateElement() {
+        let input = this.input.value;
+        let parts = input.split(":");
+        if (parts.length !== 3) {
+          this.message.textContent = "Format: row:col:newValue";
+          return;
+        }
+        let r = parseInt(parts[0]), c = parseInt(parts[1]), v = parts[2];
+        this.matrix[r + "," + c] = v;
+        this.renderMatrix([[r, c]]);
+        this.message.textContent = `Updated element at (${r},${c}).`;
+        await this.sleep(this.animationDelay);
+        this.renderMatrix();
+        this.input.value = "";
+      }
+      
+      async searchElement() {
+        let input = this.input.value;
+        let parts = input.split(":");
+        if (parts.length !== 2) {
+          this.message.textContent = "Format: row:col";
+          return;
+        }
+        let r = parseInt(parts[0]), c = parseInt(parts[1]);
+        this.renderMatrix([[r, c]]);
+        this.message.textContent = `Searched element at (${r},${c}).`;
+        await this.sleep(this.animationDelay);
+        this.renderMatrix();
+        this.input.value = "";
+      }
+      
+      async clearMatrix() {
+        this.matrix = {};
+        this.rows = 0;
+        this.cols = 0;
+        this.renderMatrix();
+        this.message.textContent = "Matrix cleared.";
+        this.updateInfo();
+      }
+      
+      sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    }
+    const sparseMatrixVisualizer = new SparseMatrixVisualizer();
+    
+    /* ---------------- Adjacency Matrix Visualizer ---------------- */
+    class AdjacencyMatrixVisualizer {
+      constructor() {
+        this.n = 0;
+        this.matrix = [];
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.nodesInput = document.getElementById("graphNodesInput");
+        this.createBtn = document.getElementById("createAdjacencyBtn");
+        this.edgeInput = document.getElementById("edgeInput");
+        this.addEdgeBtn = document.getElementById("addEdgeBtn");
+        this.clearBtn = document.getElementById("clearAdjacencyBtn");
+        this.visualization = document.getElementById("adjacencyVisualization");
+        this.message = document.getElementById("adjacencyMessage");
+        
+        this.createBtn.addEventListener("click", () => this.createMatrix());
+        this.addEdgeBtn.addEventListener("click", () => this.addEdge());
+        this.clearBtn.addEventListener("click", () => this.clearMatrix());
+        this.updateInfo();
+      }
+      
+      updateInfo() {
+        document.getElementById("globalInfo").textContent = `Adjacency Matrix | Nodes: ${this.n}`;
+      }
+      
+      renderMatrix() {
+        let html = "<table><tr><th></th>";
+        for (let j = 0; j < this.n; j++) html += `<th>${j}</th>`;
+        html += "</tr>";
+        for (let i = 0; i < this.n; i++) {
+          html += `<tr><th>${i}</th>`;
+          for (let j = 0; j < this.n; j++) {
+            let val = this.matrix[i][j];
+            html += `<td>${val}</td>`;
+          }
+          html += "</tr>";
+        }
+        html += "</table>";
+        this.visualization.innerHTML = html;
+      }
+      
+      createMatrix() {
+        let nodes = parseInt(this.nodesInput.value);
+        if (isNaN(nodes) || nodes <= 0) {
+          this.message.textContent = "Enter a valid number of nodes.";
+          return;
+        }
+        this.n = nodes;
+        this.matrix = [];
+        for (let i = 0; i < nodes; i++) {
+          let row = [];
+          for (let j = 0; j < nodes; j++) {
+            row.push(0);
+          }
+          this.matrix.push(row);
+        }
+        this.renderMatrix();
+        this.message.textContent = "Adjacency matrix created.";
+        this.nodesInput.value = "";
+        this.updateInfo();
+      }
+      
+      addEdge() {
+        let input = this.edgeInput.value;
+        let parts = input.split(":");
+        if (parts.length !== 2) {
+          this.message.textContent = "Format: from:to";
+          return;
+        }
+        let from = parseInt(parts[0]), to = parseInt(parts[1]);
+        if (isNaN(from) || isNaN(to) || from < 0 || from >= this.n || to < 0 || to >= this.n) {
+          this.message.textContent = "Invalid node indices.";
+          return;
+        }
+        this.matrix[from][to] = 1;
+        this.renderMatrix();
+        this.message.textContent = `Edge added from ${from} to ${to}.`;
+        this.edgeInput.value = "";
+      }
+      
+      clearMatrix() {
+        this.matrix = [];
+        this.renderMatrix();
+        this.message.textContent = "Matrix cleared.";
+      }
+    }
+    const adjacencyMatrixVisualizer = new AdjacencyMatrixVisualizer();
+    
+    /* ---------------- Trie Visualizer ---------------- */
+    class TrieNode {
+      constructor() {
+        this.children = {};
+        this.terminal = false;
+        this.x = 0;
+        this.y = 0;
+        this.fresh = false;
+        this.highlight = false;
+      }
+    }
+    class TrieVisualizer {
+      constructor() {
+        this.root = new TrieNode();
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.trieInput = document.getElementById("trieInput");
+        this.createTrieBtn = document.getElementById("createTrieBtn");
+        this.trieSearchInput = document.getElementById("trieSearchInput");
+        this.searchTrieBtn = document.getElementById("searchTrieBtn");
+        this.clearTrieBtn = document.getElementById("clearTrieBtn");
+        this.trieSVG = document.getElementById("trieSVG");
+        this.message = document.getElementById("trieMessage");
+        
+        this.createTrieBtn.addEventListener("click", () => this.createTrie());
+        this.searchTrieBtn.addEventListener("click", () => this.searchTrie());
+        this.clearTrieBtn.addEventListener("click", () => this.clearTrie());
+        this.updateInfo();
+      }
+      
+      updateInfo() {
+        document.getElementById("globalInfo").textContent = `Trie | Total Words: ${this.countWords(this.root)}`;
+      }
+      
+      countWords(node) {
+        if (!node) return 0;
+        let count = node.terminal ? 1 : 0;
+        for (let key in node.children) {
+          count += this.countWords(node.children[key]);
+        }
+        return count;
+      }
+      
+      createTrie() {
+        let words = this.trieInput.value.split(',').map(x => x.trim()).filter(x => x);
+        if (words.length === 0) {
+          this.message.textContent = "Enter words to build trie.";
+          return;
+        }
+        this.root = new TrieNode();
+        words.forEach(word => this.insertWord(word));
+        this.renderTrie();
+        this.message.textContent = "Trie created.";
+        this.trieInput.value = "";
+        this.updateInfo();
+      }
+      
+      insertWord(word) {
+        let node = this.root;
+        for (let char of word) {
+          if (!node.children[char]) node.children[char] = new TrieNode();
+          node = node.children[char];
+        }
+        node.terminal = true;
+      }
+      
+      async searchTrie() {
+        let word = this.trieSearchInput.value.trim();
+        if (word === "") {
+          this.message.textContent = "Enter word to search.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.message.textContent = `Searching for "${word}"...`;
+        let node = this.root;
+        for (let char of word) {
+          if (!node.children[char]) {
+            this.message.textContent = `Word "${word}" not found.`;
+            this.setControlsEnabled(true);
+            return;
+          }
+          node = node.children[char];
+        }
+        if (node.terminal) {
+          node.highlight = true;
+          this.renderTrie();
+          await this.sleep(this.animationDelay);
+          node.highlight = false;
+          this.renderTrie();
+          this.message.textContent = `Word "${word}" found.`;
+        } else {
+          this.message.textContent = `Word "${word}" not found as complete word.`;
+        }
+        this.trieSearchInput.value = "";
+        this.setControlsEnabled(true);
+      }
+      
+      clearTrie() {
+        this.root = new TrieNode();
+        this.renderTrie();
+        this.message.textContent = "Trie cleared.";
+        this.updateInfo();
+      }
+      
+      setControlsEnabled(enabled) {
+        this.trieInput.disabled = !enabled;
+        this.createTrieBtn.disabled = !enabled;
+        this.trieSearchInput.disabled = !enabled;
+        this.searchTrieBtn.disabled = !enabled;
+        this.clearTrieBtn.disabled = !enabled;
+      }
+      
+      sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+      
+      layoutTrie() {
+        const spacingY = 60;
+        let currentX = 0;
+        const assignPos = (node, depth) => {
+          node.y = depth * spacingY + 40;
+          if (Object.keys(node.children).length === 0) {
+            node.x = currentX * 40 + 40;
+            currentX++;
+          } else {
+            for (let key in node.children) {
+              assignPos(node.children[key], depth + 1);
+            }
+            let sum = 0, count = 0;
+            for (let key in node.children) {
+              sum += node.children[key].x;
+              count++;
+            }
+            node.x = count > 0 ? (sum / count) : currentX * 40 + 40;
+          }
+        };
+        assignPos(this.root, 0);
+      }
+      
+      renderTrie() {
+        while(this.trieSVG.firstChild) {
+          this.trieSVG.removeChild(this.trieSVG.firstChild);
+        }
+        this.layoutTrie();
+        const drawEdges = (node) => {
+          if (!node) return;
+          for (let key in node.children) {
+            let child = node.children[key];
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", node.x);
+            line.setAttribute("y1", node.y);
+            line.setAttribute("x2", child.x);
+            line.setAttribute("y2", child.y);
+            line.setAttribute("stroke", varColor("--primary"));
+            line.setAttribute("stroke-width", 2);
+            this.trieSVG.appendChild(line);
+            let midX = (node.x + child.x) / 2;
+            let midY = (node.y + child.y) / 2;
+            let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", midX);
+            text.setAttribute("y", midY - 5);
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("font-size", "12px");
+            text.setAttribute("fill", varColor("--text"));
+            text.textContent = key;
+            this.trieSVG.appendChild(text);
+            drawEdges(child);
+          }
+        };
+        drawEdges(this.root);
+        const drawNodes = (node) => {
+          if (!node) return;
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", node.x);
+          circle.setAttribute("cy", node.y);
+          circle.setAttribute("r", 15);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          let fill = varColor("--primary");
+          if (node.fresh) fill = varColor("--success");
+          else if (node.highlight) fill = varColor("--warning");
+          circle.setAttribute("fill", fill);
+          this.trieSVG.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", node.x);
+          text.setAttribute("y", node.y + 5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "10px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = node.terminal ? "*" : "";
+          this.trieSVG.appendChild(text);
+          for (let key in node.children) {
+            drawNodes(node.children[key]);
+          }
+        };
+        drawNodes(this.root);
+      }
+    }
+    const trieVisualizer = new TrieVisualizer();
+    
+    /* ---------------- Segment Tree Visualizer ---------------- */
+    class SegmentTreeVisualizer {
+      constructor() {
+        this.array = [];
+        this.tree = [];
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.arrayInput = document.getElementById("segmentArrayInput");
+        this.createSegmentBtn = document.getElementById("createSegmentBtn");
+        this.updateSegmentIndex = document.getElementById("segmentUpdateIndex");
+        this.updateSegmentValue = document.getElementById("segmentUpdateValue");
+        this.updateSegmentBtn = document.getElementById("updateSegmentBtn");
+        this.clearSegmentBtn = document.getElementById("clearSegmentBtn");
+        this.segmentSVG = document.getElementById("segmentSVG");
+        this.segmentMessage = document.getElementById("segmentMessage");
+        
+        this.createSegmentBtn.addEventListener("click", () => this.createSegmentTree());
+        this.updateSegmentBtn.addEventListener("click", () => this.updateSegmentTree());
+        this.clearSegmentBtn.addEventListener("click", () => this.clearSegmentTree());
+        this.updateInfo();
+      }
+      
+      updateInfo(extra="") {
+        document.getElementById("globalInfo").textContent = `Segment Tree | Array Length: ${this.array.length} ${extra}`;
+      }
+      
+      buildSegmentTree(arr) {
+        let n = arr.length;
+        let size = 2 * Math.pow(2, Math.ceil(Math.log2(n))) - 1;
+        let tree = new Array(size).fill(0);
+        const build = (si, ss, se) => {
+          if (ss === se) {
+            tree[si] = arr[ss];
+            return tree[si];
+          }
+          let mid = Math.floor((ss+se)/2);
+          tree[si] = build(2*si+1, ss, mid) + build(2*si+2, mid+1, se);
+          return tree[si];
+        };
+        build(0, 0, n-1);
+        return tree;
+      }
+      
+      createSegmentTree() {
+        let input = this.arrayInput.value.split(',')
+          .map(x => x.trim()).filter(x => x !== "");
+        if (input.length === 0) {
+          this.segmentMessage.textContent = "Enter array elements.";
+          return;
+        }
+        this.array = input.map(Number);
+        this.tree = this.buildSegmentTree(this.array);
+        this.renderSegmentTree();
+        this.segmentMessage.textContent = "Segment tree created.";
+        this.arrayInput.value = "";
+        this.updateInfo();
+      }
+      
+      renderSegmentTree() {
+        while(this.segmentSVG.firstChild) {
+          this.segmentSVG.removeChild(this.segmentSVG.firstChild);
+        }
+        if (this.tree.length === 0) return;
+        let positions = [];
+        let currentX = 0;
+        const assignPos = (si, l, r, depth) => {
+          if(l === r) {
+            positions[si] = currentX * 40 + 40;
+            currentX++;
+            return positions[si];
+          }
+          let mid = Math.floor((l+r)/2);
+          let leftPos = assignPos(2*si+1, l, mid, depth+1);
+          let rightPos = assignPos(2*si+2, mid+1, r, depth+1);
+          positions[si] = (leftPos + rightPos)/2;
+          return positions[si];
+        };
+        assignPos(0, 0, this.array.length-1, 0);
+        const drawTree = (si, l, r, depth) => {
+          if (si >= this.tree.length) return;
+          let x = positions[si];
+          let y = depth * 50 + 40;
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", x);
+          circle.setAttribute("cy", y);
+          circle.setAttribute("r", 15);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          circle.setAttribute("fill", varColor("--primary"));
+          this.segmentSVG.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", x);
+          text.setAttribute("y", y+5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "12px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = this.tree[si];
+          this.segmentSVG.appendChild(text);
+          let mid = Math.floor((l+r)/2);
+          if(l < r) {
+            let leftChild = 2*si+1;
+            let rightChild = 2*si+2;
+            let leftX = positions[leftChild];
+            let leftY = (depth+1)*50+40;
+            let rightX = positions[rightChild];
+            let rightY = (depth+1)*50+40;
+            let line1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line1.setAttribute("x1", x);
+            line1.setAttribute("y1", y);
+            line1.setAttribute("x2", leftX);
+            line1.setAttribute("y2", leftY);
+            line1.setAttribute("stroke", varColor("--primary"));
+            line1.setAttribute("stroke-width", 2);
+            this.segmentSVG.appendChild(line1);
+            let line2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line2.setAttribute("x1", x);
+            line2.setAttribute("y1", y);
+            line2.setAttribute("x2", rightX);
+            line2.setAttribute("y2", rightY);
+            line2.setAttribute("stroke", varColor("--primary"));
+            line2.setAttribute("stroke-width", 2);
+            this.segmentSVG.appendChild(line2);
+            drawTree(leftChild, l, mid, depth+1);
+            drawTree(rightChild, mid+1, r, depth+1);
+          }
+        };
+        drawTree(0, 0, this.array.length-1, 0);
+      }
+      
+      async updateSegmentTree() {
+        let index = parseInt(this.updateSegmentIndex.value);
+        let newVal = parseFloat(this.updateSegmentValue.value);
+        if (isNaN(index) || index < 0 || index >= this.array.length) {
+          this.segmentMessage.textContent = "Invalid index.";
+          return;
+        }
+        this.array[index] = newVal;
+        this.tree = this.buildSegmentTree(this.array);
+        this.renderSegmentTree();
+        this.segmentMessage.textContent = `Updated index ${index} to ${newVal}.`;
+        this.updateSegmentIndex.value = "";
+        this.updateSegmentValue.value = "";
+      }
+      
+      async clearSegmentTree() {
+        this.array = [];
+        this.tree = [];
+        this.renderSegmentTree();
+        this.segmentMessage.textContent = "Segment tree cleared.";
+        this.updateInfo();
+      }
+    }
+    const segmentTreeVisualizer = new SegmentTreeVisualizer();
+    
+    /* ---------------- Hypergraph Visualizer ---------------- */
+    class HypergraphVisualizer {
+      constructor() {
+        this.nodes = []; // node labels
+        this.hyperedges = []; // each hyperedge: array of node indices
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.nodesInput = document.getElementById("hyperNodesInput");
+        this.createHypergraphBtn = document.getElementById("createHypergraphBtn");
+        this.edgeInput = document.getElementById("hyperEdgeInput");
+        this.addHyperedgeBtn = document.getElementById("addHyperedgeBtn");
+        this.clearHypergraphBtn = document.getElementById("clearHypergraphBtn");
+        this.hypergraphSVG = document.getElementById("hypergraphSVG");
+        this.hypergraphMessage = document.getElementById("hypergraphMessage");
+        
+        this.createHypergraphBtn.addEventListener("click", () => this.createHypergraph());
+        this.addHyperedgeBtn.addEventListener("click", () => this.addHyperedge());
+        this.clearHypergraphBtn.addEventListener("click", () => this.clearHypergraph());
+        this.updateInfo();
+      }
+      
+      updateInfo() {
+        document.getElementById("globalInfo").textContent = `Hypergraph | Nodes: ${this.nodes.length} | Hyperedges: ${this.hyperedges.length}`;
+      }
+      
+      createHypergraph() {
+        let input = this.nodesInput.value.split(',').map(x => x.trim()).filter(x => x);
+        if (input.length === 0) {
+          this.hypergraphMessage.textContent = "Enter node labels.";
+          return;
+        }
+        this.nodes = input;
+        this.hyperedges = [];
+        this.renderHypergraph();
+        this.hypergraphMessage.textContent = "Hypergraph created.";
+        this.nodesInput.value = "";
+        this.updateInfo();
+      }
+      
+      addHyperedge() {
+        let input = this.edgeInput.value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        if (input.length < 2) {
+          this.hypergraphMessage.textContent = "Enter at least two node indices for hyperedge.";
+          return;
+        }
+        this.hyperedges.push(input);
+        this.renderHypergraph();
+        this.hypergraphMessage.textContent = "Hyperedge added.";
+        this.edgeInput.value = "";
+        this.updateInfo();
+      }
+      
+      renderHypergraph() {
+        while(this.hypergraphSVG.firstChild) {
+          this.hypergraphSVG.removeChild(this.hypergraphSVG.firstChild);
+        }
+        let centerX = this.hypergraphSVG.clientWidth || 800;
+        let centerY = this.hypergraphSVG.clientHeight || 500;
+        let radius = Math.min(centerX, centerY)/2 - 50;
+        let positions = [];
+        for (let i = 0; i < this.nodes.length; i++) {
+          let angle = (2 * Math.PI * i) / this.nodes.length;
+          let x = centerX/2 + radius * Math.cos(angle);
+          let y = centerY/2 + radius * Math.sin(angle);
+          positions.push({x, y});
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", x);
+          circle.setAttribute("cy", y);
+          circle.setAttribute("r", 20);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          circle.setAttribute("fill", varColor("--primary"));
+          this.hypergraphSVG.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", x);
+          text.setAttribute("y", y + 5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "12px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = this.nodes[i];
+          this.hypergraphSVG.appendChild(text);
+        }
+        for (let edge of this.hyperedges) {
+          let pts = edge.map(i => positions[i]).filter(p => p);
+          if (pts.length < 2) continue;
+          let avgX = pts.reduce((sum, p) => sum + p.x, 0) / pts.length;
+          let avgY = pts.reduce((sum, p) => sum + p.y, 0) / pts.length;
+          pts.forEach(p => {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", p.x);
+            line.setAttribute("y1", p.y);
+            line.setAttribute("x2", avgX);
+            line.setAttribute("y2", avgY);
+            line.setAttribute("stroke", varColor("--warning"));
+            line.setAttribute("stroke-width", 2);
+            this.hypergraphSVG.appendChild(line);
+          });
+        }
+      }
+      
+      clearHypergraph() {
+        this.nodes = [];
+        this.hyperedges = [];
+        this.renderHypergraph();
+        this.hypergraphMessage.textContent = "Hypergraph cleared.";
+        this.updateInfo();
+      }
+    }
+    const hypergraphVisualizer = new HypergraphVisualizer();
+    
+    /* ---------------- Heap Visualizer ---------------- */
+    class HeapVisualizer {
+      constructor() {
+        this.heap = [];
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.arrayInput = document.getElementById("heapArrayInput");
+        this.createHeapBtn = document.getElementById("createHeapBtn");
+        this.heapInsertInput = document.getElementById("heapInsertInput");
+        this.heapInsertBtn = document.getElementById("heapInsertBtn");
+        this.heapDeleteBtn = document.getElementById("heapDeleteBtn");
+        this.clearHeapBtn = document.getElementById("clearHeapBtn");
+        this.heapSVG = document.getElementById("heapSVG");
+        this.heapMessage = document.getElementById("heapMessage");
+        
+        this.createHeapBtn.addEventListener("click", () => this.createHeap());
+        this.heapInsertBtn.addEventListener("click", () => this.insertHeap());
+        this.heapDeleteBtn.addEventListener("click", () => this.deleteHeap());
+        this.clearHeapBtn.addEventListener("click", () => this.clearHeap());
+        this.updateInfo();
+      }
+      
+      updateInfo(extra="") {
+        document.getElementById("globalInfo").textContent = `Heap | Size: ${this.heap.length} ${extra}`;
+      }
+      
+      createHeap() {
+        let input = this.arrayInput.value.split(',')
+          .map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        if (input.length === 0) {
+          this.heapMessage.textContent = "Enter numeric values.";
+          return;
+        }
+        this.heap = [];
+        input.forEach(val => this.insertHeapValue(val));
+        this.renderHeap();
+        this.heapMessage.textContent = "Heap created.";
+        this.arrayInput.value = "";
+        this.updateInfo();
+      }
+      
+      insertHeapValue(val) {
+        this.heap.push(val);
+        let i = this.heap.length - 1;
+        while (i > 0) {
+          let parent = Math.floor((i - 1) / 2);
+          if (this.heap[i] < this.heap[parent]) {
+            [this.heap[i], this.heap[parent]] = [this.heap[parent], this.heap[i]];
+            i = parent;
+          } else break;
+        }
+      }
+      
+      async insertHeap() {
+        if (this.isAnimating) return;
+        let val = parseInt(this.heapInsertInput.value);
+        if (isNaN(val)) {
+          this.heapMessage.textContent = "Enter a numeric value.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.heap.push(val);
+        let i = this.heap.length - 1;
+        this.renderHeap();
+        this.heapMessage.textContent = `Inserted ${val}.`;
+        await this.sleep(this.animationDelay);
+        while (i > 0) {
+          let parent = Math.floor((i - 1) / 2);
+          if (this.heap[i] < this.heap[parent]) {
+            [this.heap[i], this.heap[parent]] = [this.heap[parent], this.heap[i]];
+            i = parent;
+            this.renderHeap();
+            await this.sleep(this.animationDelay);
+          } else break;
+        }
+        this.heapInsertInput.value = "";
+        this.renderHeap();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async deleteHeap() {
+        if (this.isAnimating) return;
+        if (this.heap.length === 0) {
+          this.heapMessage.textContent = "Heap is empty.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.heapMessage.textContent = "Deleting top element...";
+        this.heap[0] = this.heap[this.heap.length - 1];
+        this.heap.pop();
+        this.renderHeap();
+        await this.sleep(this.animationDelay);
+        let i = 0;
+        while (true) {
+          let left = 2 * i + 1, right = 2 * i + 2, smallest = i;
+          if (left < this.heap.length && this.heap[left] < this.heap[smallest]) smallest = left;
+          if (right < this.heap.length && this.heap[right] < this.heap[smallest]) smallest = right;
+          if (smallest !== i) {
+            [this.heap[i], this.heap[smallest]] = [this.heap[smallest], this.heap[i]];
+            i = smallest;
+            this.renderHeap();
+            await this.sleep(this.animationDelay);
+          } else break;
+        }
+        this.heapMessage.textContent = "Deleted top element.";
+        this.renderHeap();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      renderHeap() {
+        while (this.heapSVG.firstChild) {
+          this.heapSVG.removeChild(this.heapSVG.firstChild);
+        }
+        if (this.heap.length === 0) return;
+        let positions = [];
+        let currentX = 0;
+        const assignPos = (i, depth) => {
+          if (i >= this.heap.length) return;
+          if (2*i+1 >= this.heap.length && 2*i+2 >= this.heap.length) {
+            positions[i] = currentX * 40 + 40;
+            currentX++;
+          } else {
+            assignPos(2*i+1, depth+1);
+            assignPos(2*i+2, depth+1);
+            let left = positions[2*i+1] || 0;
+            let right = positions[2*i+2] || 0;
+            positions[i] = (left + right)/2;
+          }
+        };
+        assignPos(0,0);
+        const drawHeap = (i, depth) => {
+          if (i >= this.heap.length) return;
+          let x = positions[i];
+          let y = depth * 50 + 40;
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", x);
+          circle.setAttribute("cy", y);
+          circle.setAttribute("r", 15);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          circle.setAttribute("fill", varColor("--primary"));
+          this.heapSVG.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", x);
+          text.setAttribute("y", y+5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "12px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = this.heap[i];
+          this.heapSVG.appendChild(text);
+          let left = 2*i+1, right = 2*i+2;
+          if (left < this.heap.length) {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", x);
+            line.setAttribute("y1", y);
+            line.setAttribute("x2", positions[left]);
+            line.setAttribute("y2", (depth+1)*50+40);
+            line.setAttribute("stroke", varColor("--primary"));
+            line.setAttribute("stroke-width", 2);
+            this.heapSVG.appendChild(line);
+            drawHeap(left, depth+1);
+          }
+          if (right < this.heap.length) {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", x);
+            line.setAttribute("y1", y);
+            line.setAttribute("x2", positions[right]);
+            line.setAttribute("y2", (depth+1)*50+40);
+            line.setAttribute("stroke", varColor("--primary"));
+            line.setAttribute("stroke-width", 2);
+            this.heapSVG.appendChild(line);
+            drawHeap(right, depth+1);
+          }
+        };
+        drawHeap(0,0);
+      }
+      
+      setControlsEnabled(enabled) {
+        this.arrayInput.disabled = !enabled;
+        this.createHeapBtn.disabled = !enabled;
+        this.heapInsertInput.disabled = !enabled;
+        this.heapInsertBtn.disabled = !enabled;
+        this.heapDeleteBtn.disabled = !enabled;
+        this.clearHeapBtn.disabled = !enabled;
+      }
+      
+      sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    }
+    const heapVisualizer = new HeapVisualizer();
+    
+    /* ---------------- Helper Function ---------------- */
+    function varColor(variable) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+    }
+  </script>
+</body>
+</html>

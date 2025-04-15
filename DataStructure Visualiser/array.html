@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Array Operations Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
+                  0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .controls {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    input,
+    button {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background-color: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+    }
+    button {
+      cursor: pointer;
+      background-color: var(--primary);
+      border: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+    .array-container {
+      background-color: var(--background);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .array-visualization {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .array-element {
+      width: 60px;
+      height: 60px;
+      border: 2px solid var(--border);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 500;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .array-element::before {
+      content: attr(data-index);
+      position: absolute;
+      top: -1.5rem;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    .array-element.fresh {
+      background-color: var(--success);
+      color: var(--background);
+      transform: translateY(-4px);
+      border-color: var(--success);
+    }
+    .array-element.highlight {
+      background-color: var(--warning);
+      color: var(--background);
+      transform: translateY(-4px);
+      border-color: var(--warning);
+    }
+    .message {
+      text-align: center;
+      min-height: 1.5rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .speed-slider {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Array Operations Visualizer</h1>
+      <p>Visualize array operations step by step</p>
+    </div>
+    <div class="controls">
+      <!-- Create Array -->
+      <div class="input-group">
+        <input type="text" id="arrayInput" placeholder="Enter array elements (e.g., 3, 5, 7, 9)" style="flex: 1;">
+        <button id="createArrayBtn">
+          <i class="fas fa-plus"></i> Create Array
+        </button>
+      </div>
+      <!-- Push / Pop -->
+      <div class="input-group">
+        <input type="text" id="pushInput" placeholder="Value to push" style="flex: 1;">
+        <button id="pushBtn">
+          <i class="fas fa-arrow-right"></i> Push
+        </button>
+        <button id="popBtn">
+          <i class="fas fa-arrow-left"></i> Pop
+        </button>
+      </div>
+      <!-- Unshift / Shift -->
+      <div class="input-group">
+        <input type="text" id="unshiftInput" placeholder="Value to unshift" style="flex: 1;">
+        <button id="unshiftBtn">
+          <i class="fas fa-arrow-left"></i> Unshift
+        </button>
+        <button id="shiftBtn">
+          <i class="fas fa-arrow-right"></i> Shift
+        </button>
+      </div>
+      <!-- Insert at Index -->
+      <div class="input-group">
+        <input type="number" id="insertIndex" placeholder="Index" style="width:80px;">
+        <input type="text" id="insertValue" placeholder="Value to insert" style="flex: 1;">
+        <button id="insertBtn">
+          <i class="fas fa-plus"></i> Insert at Index
+        </button>
+      </div>
+      <!-- Delete at Index -->
+      <div class="input-group">
+        <input type="number" id="deleteIndex" placeholder="Index" style="width:80px;">
+        <button id="deleteBtn">
+          <i class="fas fa-minus"></i> Delete at Index
+        </button>
+      </div>
+      <!-- Update at Index -->
+      <div class="input-group">
+        <input type="number" id="updateIndex" placeholder="Index" style="width:80px;">
+        <input type="text" id="updateValue" placeholder="New Value" style="flex: 1;">
+        <button id="updateBtn">
+          <i class="fas fa-edit"></i> Update at Index
+        </button>
+      </div>
+      <!-- Search -->
+      <div class="input-group">
+        <input type="text" id="searchInput" placeholder="Value to search" style="flex: 1;">
+        <button id="searchBtn">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </div>
+      <!-- Sort, Reverse, Clear -->
+      <div class="input-group">
+        <button id="sortBtn">
+          <i class="fas fa-sort"></i> Sort Array
+        </button>
+        <button id="reverseBtn">
+          <i class="fas fa-sync-alt"></i> Reverse Array
+        </button>
+        <button id="clearBtn" class="secondary">
+          <i class="fas fa-redo"></i> Clear Array
+        </button>
+      </div>
+    </div>
+    <div class="array-container">
+      <div class="array-visualization" id="arrayVisualization"></div>
+      <div class="message" id="message"></div>
+    </div>
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControl">
+      <span>Animation Speed</span>
+    </div>
+    <div class="info" id="info"></div>
+  </div>
+  
+  <script>
+    class ArrayVisualizer {
+      constructor() {
+        this.array = [];
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        
+        // DOM Elements
+        this.arrayInput = document.getElementById("arrayInput");
+        this.createArrayBtn = document.getElementById("createArrayBtn");
+        this.pushInput = document.getElementById("pushInput");
+        this.pushBtn = document.getElementById("pushBtn");
+        this.popBtn = document.getElementById("popBtn");
+        this.unshiftInput = document.getElementById("unshiftInput");
+        this.unshiftBtn = document.getElementById("unshiftBtn");
+        this.shiftBtn = document.getElementById("shiftBtn");
+        this.insertIndexInput = document.getElementById("insertIndex");
+        this.insertValueInput = document.getElementById("insertValue");
+        this.insertBtn = document.getElementById("insertBtn");
+        this.deleteIndexInput = document.getElementById("deleteIndex");
+        this.deleteBtn = document.getElementById("deleteBtn");
+        this.updateIndexInput = document.getElementById("updateIndex");
+        this.updateValueInput = document.getElementById("updateValue");
+        this.updateBtn = document.getElementById("updateBtn");
+        this.searchInput = document.getElementById("searchInput");
+        this.searchBtn = document.getElementById("searchBtn");
+        this.sortBtn = document.getElementById("sortBtn");
+        this.reverseBtn = document.getElementById("reverseBtn");
+        this.clearBtn = document.getElementById("clearBtn");
+        
+        this.arrayVisualization = document.getElementById("arrayVisualization");
+        this.message = document.getElementById("message");
+        this.speedControl = document.getElementById("speedControl");
+        this.info = document.getElementById("info");
+        
+        // Event Listeners
+        this.createArrayBtn.addEventListener("click", () => this.createArray());
+        this.pushBtn.addEventListener("click", () => this.push());
+        this.popBtn.addEventListener("click", () => this.pop());
+        this.unshiftBtn.addEventListener("click", () => this.unshift());
+        this.shiftBtn.addEventListener("click", () => this.shift());
+        this.insertBtn.addEventListener("click", () => this.insertAtIndex());
+        this.deleteBtn.addEventListener("click", () => this.deleteAtIndex());
+        this.updateBtn.addEventListener("click", () => this.updateAtIndex());
+        this.searchBtn.addEventListener("click", () => this.search());
+        this.sortBtn.addEventListener("click", () => this.sortArray());
+        this.reverseBtn.addEventListener("click", () => this.reverseArray());
+        this.clearBtn.addEventListener("click", () => this.clearArray());
+        this.speedControl.addEventListener("input", (e) => {
+          this.animationDelay = 1000 / e.target.value;
+        });
+        
+        this.updateInfo();
+      }
+      
+      sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      
+      setControlsEnabled(enabled) {
+        this.createArrayBtn.disabled = !enabled;
+        this.arrayInput.disabled = !enabled;
+        this.pushInput.disabled = !enabled;
+        this.pushBtn.disabled = !enabled;
+        this.popBtn.disabled = !enabled;
+        this.unshiftInput.disabled = !enabled;
+        this.unshiftBtn.disabled = !enabled;
+        this.shiftBtn.disabled = !enabled;
+        this.insertIndexInput.disabled = !enabled;
+        this.insertValueInput.disabled = !enabled;
+        this.insertBtn.disabled = !enabled;
+        this.deleteIndexInput.disabled = !enabled;
+        this.deleteBtn.disabled = !enabled;
+        this.updateIndexInput.disabled = !enabled;
+        this.updateValueInput.disabled = !enabled;
+        this.updateBtn.disabled = !enabled;
+        this.searchInput.disabled = !enabled;
+        this.searchBtn.disabled = !enabled;
+        this.sortBtn.disabled = !enabled;
+        this.reverseBtn.disabled = !enabled;
+        this.clearBtn.disabled = !enabled;
+      }
+      
+      updateInfo(extra = "") {
+        this.info.textContent = `Array Size: ${this.array.length} ${extra}`;
+      }
+      
+      createArray() {
+        let input = this.arrayInput.value.split(',')
+          .map(x => x.trim())
+          .filter(x => x !== "");
+        if (input.length === 0) {
+          this.message.textContent = "Please enter valid array elements.";
+          return;
+        }
+        this.array = input;
+        this.visualizeArray();
+        this.message.textContent = "Array created.";
+        this.arrayInput.value = "";
+        this.updateInfo();
+      }
+      
+      visualizeArray(highlightIndices = [], highlightClass = "") {
+        this.arrayVisualization.innerHTML = "";
+        this.array.forEach((value, idx) => {
+          const elem = document.createElement("div");
+          elem.className = "array-element";
+          elem.textContent = value;
+          elem.setAttribute("data-index", idx);
+          if (highlightIndices.includes(idx)) {
+            elem.classList.add(highlightClass);
+          }
+          this.arrayVisualization.appendChild(elem);
+        });
+      }
+      
+      async push() {
+        if (this.isAnimating) return;
+        let value = this.pushInput.value.trim();
+        if (value === "") {
+          this.message.textContent = "Please enter a value to push.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Pushing ${value}...`;
+        this.array.push(value);
+        this.visualizeArray([this.array.length - 1], "fresh");
+        await this.sleep(this.animationDelay);
+        this.visualizeArray();
+        this.message.textContent = `Pushed ${value}.`;
+        this.pushInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async pop() {
+        if (this.isAnimating) return;
+        if (this.array.length === 0) {
+          this.message.textContent = "Array is empty.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        let value = this.array[this.array.length - 1];
+        this.message.textContent = `Popping ${value}...`;
+        this.visualizeArray([this.array.length - 1], "highlight");
+        await this.sleep(this.animationDelay);
+        this.array.pop();
+        this.visualizeArray();
+        this.message.textContent = `Popped ${value}.`;
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async unshift() {
+        if (this.isAnimating) return;
+        let value = this.unshiftInput.value.trim();
+        if (value === "") {
+          this.message.textContent = "Please enter a value to unshift.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Unshifting ${value}...`;
+        this.array.unshift(value);
+        this.visualizeArray([0], "fresh");
+        await this.sleep(this.animationDelay);
+        this.visualizeArray();
+        this.message.textContent = `Unshifted ${value}.`;
+        this.unshiftInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async shift() {
+        if (this.isAnimating) return;
+        if (this.array.length === 0) {
+          this.message.textContent = "Array is empty.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        let value = this.array[0];
+        this.message.textContent = `Shifting ${value}...`;
+        this.visualizeArray([0], "highlight");
+        await this.sleep(this.animationDelay);
+        this.array.shift();
+        this.visualizeArray();
+        this.message.textContent = `Shifted ${value}.`;
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async insertAtIndex() {
+        if (this.isAnimating) return;
+        let index = parseInt(this.insertIndexInput.value);
+        let value = this.insertValueInput.value.trim();
+        if (isNaN(index) || index < 0 || index > this.array.length) {
+          this.message.textContent = "Invalid index.";
+          return;
+        }
+        if (value === "") {
+          this.message.textContent = "Please enter a value to insert.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Inserting ${value} at index ${index}...`;
+        this.array.splice(index, 0, value);
+        this.visualizeArray([index], "fresh");
+        await this.sleep(this.animationDelay);
+        this.visualizeArray();
+        this.message.textContent = `Inserted ${value} at index ${index}.`;
+        this.insertIndexInput.value = "";
+        this.insertValueInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async deleteAtIndex() {
+        if (this.isAnimating) return;
+        let index = parseInt(this.deleteIndexInput.value);
+        if (isNaN(index) || index < 0 || index >= this.array.length) {
+          this.message.textContent = "Invalid index.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        let value = this.array[index];
+        this.message.textContent = `Deleting element at index ${index} (${value})...`;
+        this.visualizeArray([index], "highlight");
+        await this.sleep(this.animationDelay);
+        this.array.splice(index, 1);
+        this.visualizeArray();
+        this.message.textContent = `Deleted element ${value} from index ${index}.`;
+        this.deleteIndexInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async updateAtIndex() {
+        if (this.isAnimating) return;
+        let index = parseInt(this.updateIndexInput.value);
+        let newValue = this.updateValueInput.value.trim();
+        if (isNaN(index) || index < 0 || index >= this.array.length) {
+          this.message.textContent = "Invalid index.";
+          return;
+        }
+        if (newValue === "") {
+          this.message.textContent = "Please enter a new value.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Updating index ${index} to ${newValue}...`;
+        this.array[index] = newValue;
+        this.visualizeArray([index], "fresh");
+        await this.sleep(this.animationDelay);
+        this.visualizeArray();
+        this.message.textContent = `Updated index ${index} to ${newValue}.`;
+        this.updateIndexInput.value = "";
+        this.updateValueInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async search() {
+        if (this.isAnimating) return;
+        let value = this.searchInput.value.trim();
+        if (value === "") {
+          this.message.textContent = "Please enter a value to search.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Searching for ${value}...`;
+        let foundIndex = this.array.indexOf(value);
+        if (foundIndex === -1) {
+          this.message.textContent = `Value ${value} not found in array.`;
+        } else {
+          this.message.textContent = `Value ${value} found at index ${foundIndex}.`;
+          this.visualizeArray([foundIndex], "highlight");
+          await this.sleep(this.animationDelay);
+          this.visualizeArray();
+        }
+        this.searchInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+      
+      async sortArray() {
+        if (this.isAnimating) return;
+        if (this.array.length === 0) {
+          this.message.textContent = "Array is empty.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = "Sorting array...";
+        // If all elements are numeric, sort numerically; otherwise, lexicographically.
+        let numeric = this.array.every(x => !isNaN(x));
+        if (numeric) {
+          this.array.sort((a, b) => a - b);
+        } else {
+          this.array.sort();
+        }
+        this.visualizeArray();
+        await this.sleep(this.animationDelay);
+        this.message.textContent = "Array sorted.";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async reverseArray() {
+        if (this.isAnimating) return;
+        if (this.array.length === 0) {
+          this.message.textContent = "Array is empty.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = "Reversing array...";
+        this.array.reverse();
+        this.visualizeArray();
+        await this.sleep(this.animationDelay);
+        this.message.textContent = "Array reversed.";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      async clearArray() {
+        if (this.isAnimating) return;
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = "Clearing array...";
+        this.array = [];
+        this.visualizeArray();
+        await this.sleep(this.animationDelay);
+        this.message.textContent = "Array cleared.";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+    }
+    
+    // Initialize the Array Visualizer
+    const arrayVisualizer = new ArrayVisualizer();
+  </script>
+</body>
+</html>

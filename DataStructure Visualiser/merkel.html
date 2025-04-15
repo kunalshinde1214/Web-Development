@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merkle Tree Operations Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
+                  0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .controls {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    input,
+    button {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background-color: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+    }
+    button {
+      cursor: pointer;
+      background-color: var(--primary);
+      border: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+    .array-container {
+      background-color: var(--background);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    /* Merkle Tree Visualization Styles */
+    .tree-container {
+      border: 2px dashed var(--border);
+      border-radius: 0.5rem;
+      height: 500px;
+      position: relative;
+      overflow: auto;
+      margin-bottom: 1.5rem;
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+    .message {
+      text-align: center;
+      min-height: 1.5rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .speed-slider {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Merkle Tree Operations Visualizer</h1>
+      <p>Visualize Merkle tree operations step by step</p>
+    </div>
+
+    <div class="controls">
+      <!-- Create Tree -->
+      <div class="input-group">
+        <input type="text" id="leavesInput" placeholder="Enter leaf values (e.g., apple, banana, cherry, date)" style="flex:1;">
+        <button id="createTreeBtn">
+          <i class="fas fa-plus"></i> Create Tree
+        </button>
+      </div>
+      <!-- Update Leaf -->
+      <div class="input-group">
+        <input type="number" id="updateLeafIndex" placeholder="Leaf Index" style="width:80px;">
+        <input type="text" id="updateLeafValue" placeholder="New Value" style="flex:1;">
+        <button id="updateLeafBtn">
+          <i class="fas fa-edit"></i> Update Leaf
+        </button>
+      </div>
+      <!-- Search Leaf -->
+      <div class="input-group">
+        <input type="text" id="searchLeafValue" placeholder="Value to search" style="flex:1;">
+        <button id="searchLeafBtn">
+          <i class="fas fa-search"></i> Search Leaf
+        </button>
+      </div>
+      <!-- Clear Tree -->
+      <div class="input-group">
+        <button id="clearTreeBtn" class="secondary">
+          <i class="fas fa-redo"></i> Clear Tree
+        </button>
+      </div>
+    </div>
+
+    <div class="array-container">
+      <div class="tree-container">
+        <svg id="treeSVG"></svg>
+      </div>
+      <div class="message" id="message"></div>
+    </div>
+
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControl">
+      <span>Animation Speed</span>
+    </div>
+
+    <div class="info" id="info"></div>
+  </div>
+
+  <script>
+    // A simple hash function for demonstration.
+    function simpleHash(s) {
+      let hash = 0;
+      for (let i = 0; i < s.length; i++) {
+        hash = ((hash << 5) - hash) + s.charCodeAt(i);
+        hash |= 0;
+      }
+      return "0x" + Math.abs(hash).toString(16);
+    }
+
+    // Merkle Tree Node class.
+    class MerkleNode {
+      constructor(hash, left = null, right = null, value = null) {
+        this.hash = hash;      // Hash of this node.
+        this.left = left;
+        this.right = right;
+        this.value = value;    // Only for leaf nodes.
+        // Visualization properties:
+        this.x = 0;
+        this.y = 0;
+        this.fresh = false;
+        this.highlight = false;
+      }
+    }
+
+    // Build a Merkle tree from an array of leaf values.
+    function buildMerkleTree(leafValues) {
+      // Create leaf nodes.
+      let originalLeaves = leafValues.map(v => new MerkleNode(simpleHash(v), null, null, v));
+      let leaves = originalLeaves.slice();
+      // If odd, duplicate last leaf.
+      if (leaves.length % 2 === 1) {
+        leaves.push(leaves[leaves.length - 1]);
+      }
+      // Build the tree.
+      while (leaves.length > 1) {
+        let nextLevel = [];
+        for (let i = 0; i < leaves.length; i += 2) {
+          let left = leaves[i];
+          let right = leaves[i+1];
+          let parentHash = simpleHash(left.hash + right.hash);
+          let parent = new MerkleNode(parentHash, left, right);
+          nextLevel.push(parent);
+        }
+        if (nextLevel.length % 2 === 1 && nextLevel.length > 1) {
+          nextLevel.push(nextLevel[nextLevel.length - 1]);
+        }
+        leaves = nextLevel;
+      }
+      return { root: leaves[0], leafNodes: originalLeaves };
+    }
+
+    class MerkleTreeVisualizer {
+      constructor() {
+        this.leafValues = [];  // Array of strings.
+        this.root = null;
+        this.leafNodes = [];   // Array of leaf MerkleNodes corresponding to leafValues.
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+
+        // DOM Elements
+        this.leavesInput = document.getElementById("leavesInput");
+        this.createTreeBtn = document.getElementById("createTreeBtn");
+        this.updateLeafIndexInput = document.getElementById("updateLeafIndex");
+        this.updateLeafValueInput = document.getElementById("updateLeafValue");
+        this.updateLeafBtn = document.getElementById("updateLeafBtn");
+        this.searchLeafValueInput = document.getElementById("searchLeafValue");
+        this.searchLeafBtn = document.getElementById("searchLeafBtn");
+        this.clearTreeBtn = document.getElementById("clearTreeBtn");
+        this.treeSVG = document.getElementById("treeSVG");
+        this.message = document.getElementById("message");
+        this.speedControl = document.getElementById("speedControl");
+        this.info = document.getElementById("info");
+
+        // Event Listeners
+        this.createTreeBtn.addEventListener("click", () => this.createTree());
+        this.updateLeafBtn.addEventListener("click", () => this.updateLeaf());
+        this.searchLeafBtn.addEventListener("click", () => this.searchLeaf());
+        this.clearTreeBtn.addEventListener("click", () => this.clearTree());
+        this.speedControl.addEventListener("input", (e) => {
+          this.animationDelay = 1000 / e.target.value;
+        });
+
+        this.updateInfo();
+      }
+
+      setControlsEnabled(enabled) {
+        this.leavesInput.disabled = !enabled;
+        this.createTreeBtn.disabled = !enabled;
+        this.updateLeafIndexInput.disabled = !enabled;
+        this.updateLeafValueInput.disabled = !enabled;
+        this.updateLeafBtn.disabled = !enabled;
+        this.searchLeafValueInput.disabled = !enabled;
+        this.searchLeafBtn.disabled = !enabled;
+        this.clearTreeBtn.disabled = !enabled;
+      }
+
+      sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+
+      updateInfo(extra = "") {
+        let size = this.leafValues.length;
+        let rootHash = this.root ? this.root.hash : "N/A";
+        this.info.textContent = `Leaves: ${size} | Root: ${rootHash} ${extra}`;
+      }
+
+      createTree() {
+        let input = this.leavesInput.value.split(',')
+          .map(x => x.trim())
+          .filter(x => x !== "");
+        if (input.length === 0) {
+          this.message.textContent = "Please enter valid leaf values.";
+          return;
+        }
+        this.leafValues = input;
+        let tree = buildMerkleTree(this.leafValues);
+        this.root = tree.root;
+        this.leafNodes = tree.leafNodes;
+        this.renderTree();
+        this.message.textContent = "Merkle tree created.";
+        this.leavesInput.value = "";
+        this.updateInfo();
+      }
+
+      // Update a leaf: update the value in the leafValues array, rebuild the tree.
+      async updateLeaf() {
+        if (this.isAnimating) return;
+        let index = parseInt(this.updateLeafIndexInput.value);
+        let newValue = this.updateLeafValueInput.value.trim();
+        if (isNaN(index) || index < 0 || index >= this.leafValues.length) {
+          this.message.textContent = "Invalid leaf index.";
+          return;
+        }
+        if (newValue === "") {
+          this.message.textContent = "Enter a new value.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Updating leaf at index ${index}...`;
+        this.leafValues[index] = newValue;
+        let tree = buildMerkleTree(this.leafValues);
+        this.root = tree.root;
+        this.leafNodes = tree.leafNodes;
+        // Highlight the updated leaf.
+        this.highlightLeaf(index);
+        await this.sleep(this.animationDelay);
+        this.renderTree();
+        this.message.textContent = `Leaf ${index} updated.`;
+        this.updateLeafIndexInput.value = "";
+        this.updateLeafValueInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+
+      // Search for a leaf with a given value (exact match).
+      async searchLeaf() {
+        if (this.isAnimating) return;
+        let value = this.searchLeafValueInput.value.trim();
+        if (value === "") {
+          this.message.textContent = "Enter a value to search.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Searching for leaf "${value}"...`;
+        let index = this.leafValues.indexOf(value);
+        if (index === -1) {
+          this.message.textContent = `Value "${value}" not found among leaves.`;
+        } else {
+          this.highlightLeaf(index, "highlight");
+          await this.sleep(this.animationDelay);
+          this.renderTree();
+          this.message.textContent = `Value "${value}" found at index ${index}.`;
+        }
+        this.searchLeafValueInput.value = "";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+
+      // Highlight a leaf node at given index.
+      highlightLeaf(index, styleClass = "fresh") {
+        // Traverse tree in-order to get leaf nodes.
+        let leaves = [];
+        const traverse = (node) => {
+          if (!node) return;
+          if (!node.left && !node.right) {
+            leaves.push(node);
+          } else {
+            traverse(node.left);
+            traverse(node.right);
+          }
+        };
+        traverse(this.root);
+        if (index >= 0 && index < leaves.length) {
+          leaves[index].highlight = (styleClass === "highlight");
+          leaves[index].fresh = (styleClass === "fresh");
+          this.renderTree();
+        }
+      }
+
+      // Clear the tree.
+      async clearTree() {
+        if (this.isAnimating) return;
+        this.setControlsEnabled(false);
+        this.message.textContent = "Clearing tree...";
+        await this.sleep(this.animationDelay);
+        this.root = null;
+        this.leafValues = [];
+        this.leafNodes = [];
+        this.renderTree();
+        this.message.textContent = "Tree cleared.";
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+
+      // Layout the tree using a simple recursive algorithm.
+      layoutTree() {
+        const spacingY = 80, spacingX = 60;
+        let currentX = 0;
+        const assignPos = (node, depth) => {
+          if (!node) return;
+          node.y = depth * spacingY + 40;
+          if (!node.left && !node.right) {
+            node.x = currentX * spacingX + 40;
+            currentX++;
+          } else {
+            if (node.left) assignPos(node.left, depth + 1);
+            if (node.right) assignPos(node.right, depth + 1);
+            let sum = 0, count = 0;
+            if (node.left) { sum += node.left.x; count++; }
+            if (node.right) { sum += node.right.x; count++; }
+            node.x = count > 0 ? (sum / count) : currentX * spacingX + 40;
+          }
+        };
+        assignPos(this.root, 0);
+      }
+
+      // Render the tree in the SVG.
+      renderTree() {
+        while(this.treeSVG.firstChild) {
+          this.treeSVG.removeChild(this.treeSVG.firstChild);
+        }
+        if (!this.root) return;
+        this.layoutTree();
+        // Draw edges
+        const drawEdges = (node) => {
+          if (!node) return;
+          if (node.left) {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", node.x);
+            line.setAttribute("y1", node.y);
+            line.setAttribute("x2", node.left.x);
+            line.setAttribute("y2", node.left.y);
+            line.setAttribute("stroke", varColor("--primary"));
+            line.setAttribute("stroke-width", 2);
+            this.treeSVG.appendChild(line);
+            // If branch label exists on left child, draw it.
+            if (node.left.branchLabel) {
+              let midX = (node.x + node.left.x) / 2;
+              let midY = (node.y + node.left.y) / 2;
+              let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+              text.setAttribute("x", midX);
+              text.setAttribute("y", midY - 5);
+              text.setAttribute("text-anchor", "middle");
+              text.setAttribute("font-size", "12px");
+              text.setAttribute("fill", varColor("--text"));
+              text.textContent = node.left.branchLabel;
+              this.treeSVG.appendChild(text);
+            }
+            drawEdges(node.left);
+          }
+          if (node.right) {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", node.x);
+            line.setAttribute("y1", node.y);
+            line.setAttribute("x2", node.right.x);
+            line.setAttribute("y2", node.right.y);
+            line.setAttribute("stroke", varColor("--primary"));
+            line.setAttribute("stroke-width", 2);
+            this.treeSVG.appendChild(line);
+            if (node.right.branchLabel) {
+              let midX = (node.x + node.right.x) / 2;
+              let midY = (node.y + node.right.y) / 2;
+              let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+              text.setAttribute("x", midX);
+              text.setAttribute("y", midY - 5);
+              text.setAttribute("text-anchor", "middle");
+              text.setAttribute("font-size", "12px");
+              text.setAttribute("fill", varColor("--text"));
+              text.textContent = node.right.branchLabel;
+              this.treeSVG.appendChild(text);
+            }
+            drawEdges(node.right);
+          }
+        };
+        drawEdges(this.root);
+        // Draw nodes
+        const drawNodes = (node) => {
+          if (!node) return;
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", node.x);
+          circle.setAttribute("cy", node.y);
+          circle.setAttribute("r", 20);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          let fill = varColor("--primary");
+          if (node.fresh) fill = varColor("--success");
+          else if (node.highlight) fill = varColor("--warning");
+          circle.setAttribute("fill", fill);
+          this.treeSVG.appendChild(circle);
+          
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", node.x);
+          text.setAttribute("y", node.y + 5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "12px");
+          text.setAttribute("fill", varColor("--text"));
+          // For leaves, show the leaf value with an asterisk; otherwise, show a truncated hash.
+          if (!node.left && !node.right) {
+            text.textContent = node.value + "*";
+          } else {
+            text.textContent = node.hash.substring(0,8);
+          }
+          this.treeSVG.appendChild(text);
+          
+          // Optionally, draw the node's ID or other info if desired.
+          for (let child of node.children || []) {
+            drawNodes(child);
+          }
+        };
+        drawNodes(this.root);
+      }
+    }
+    
+    // Helper: get CSS variable value.
+    function varColor(variable) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+    }
+    
+    // Initialize the Merkle Tree Visualizer
+    const merkleTreeVisualizer = new MerkleTreeVisualizer();
+  </script>
+</body>
+</html>

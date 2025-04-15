@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algorithm Operations Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    /* Common Design Styles */
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .header { text-align: center; margin-bottom: 2rem; }
+    .header h1 {
+      font-size: 2rem; margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .tabs { display: flex; justify-content: center; margin-bottom: 1rem; }
+    .tab-button {
+      padding: 0.75rem 1rem; margin: 0 0.5rem; border: 1px solid var(--border);
+      border-radius: 0.5rem; background-color: var(--background);
+      color: var(--text); cursor: pointer;
+    }
+    .tab-button.active { background-color: var(--primary); }
+    .visualizer { display: none; }
+    .visualizer.active { display: block; }
+    .controls { display: grid; gap: 1rem; margin-bottom: 1rem; }
+    .input-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    input, select, button {
+      padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem;
+      background-color: var(--background); color: var(--text); font-size: 1rem; outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
+    button { cursor: pointer; background-color: var(--primary); border: none; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.secondary { background-color: transparent; border: 1px solid var(--primary); }
+    .array-container { background-color: var(--background); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+    .tree-container { border: 2px dashed var(--border); border-radius: 0.5rem; min-height: 400px; position: relative; overflow: auto; }
+    .table-visualization table { border-collapse: collapse; width: 100%; }
+    .table-visualization th, .table-visualization td { border: 2px solid var(--border); padding: 8px; text-align: center; min-width: 60px; }
+    .set-visualization { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+    .set-element { width: 60px; height: 60px; border: 2px solid var(--border); border-radius: 0.5rem;
+                   display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 500;
+                   transition: all 0.3s ease; }
+    .set-element.fresh { background-color: var(--success); color: var(--background); transform: translateY(-4px); border-color: var(--success); }
+    .set-element.highlight { background-color: var(--warning); color: var(--background); transform: translateY(-4px); border-color: var(--warning); }
+    .message { text-align: center; min-height: 1.5rem; font-size: 1.1rem; color: #94a3b8; }
+    .info { text-align: center; color: #64748b; font-size: 0.875rem; margin-top: 1rem; }
+    .speed-control { display: flex; align-items: center; gap: 1rem; justify-content: center; margin-top: 1rem; }
+    .speed-slider { width: 200px; }
+    /* Specific visualizer styling for board-like layouts (N-Queens) */
+    .board { display: grid; grid-template-columns: repeat(var(--n), 40px); gap: 2px; justify-content: center; }
+    .cell { width: 40px; height: 40px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
+    .cell.black { background-color: #555; }
+    .cell.queen { color: var(--warning); font-size: 24px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Algorithm Operations Visualizer</h1>
+      <p>Explore Dijkstra, TSP, 0/1 Knapsack, Graph Colouring, and N-Queens</p>
+    </div>
+    <div class="tabs">
+      <button class="tab-button active" data-tab="dijkstra">Dijkstra</button>
+      <button class="tab-button" data-tab="tsp">TSP</button>
+      <button class="tab-button" data-tab="knapsack">Knapsack</button>
+      <button class="tab-button" data-tab="graphColoring">Graph Colouring</button>
+      <button class="tab-button" data-tab="nqueens">N-Queens</button>
+    </div>
+    <!-- Dijkstra Visualizer -->
+    <div id="dijkstra" class="visualizer active">
+      <div class="controls">
+        <div class="input-group">
+          <input type="number" id="dijkstraSource" placeholder="Source Node (0-4)" style="width:120px;">
+          <button id="runDijkstraBtn"><i class="fas fa-play"></i> Run Dijkstra</button>
+        </div>
+      </div>
+      <div class="array-container" id="dijkstraVisualization">
+        <!-- SVG will show a fixed 5-node graph -->
+        <svg id="dijkstraSVG" viewBox="0 0 500 300"></svg>
+      </div>
+      <div class="message" id="dijkstraMessage"></div>
+    </div>
+    <!-- TSP Visualizer -->
+    <div id="tsp" class="visualizer">
+      <div class="controls">
+        <button id="runTSPBtn"><i class="fas fa-play"></i> Solve TSP</button>
+      </div>
+      <div class="array-container" id="tspVisualization">
+        <svg id="tspSVG" viewBox="0 0 500 300"></svg>
+      </div>
+      <div class="message" id="tspMessage"></div>
+    </div>
+    <!-- Knapsack Visualizer -->
+    <div id="knapsack" class="visualizer">
+      <div class="controls">
+        <div class="input-group">
+          <input type="text" id="knapsackItems" placeholder="Items as weight:value (e.g., 2:3, 3:4, 4:5)" style="flex:1;">
+          <input type="number" id="knapsackCapacity" placeholder="Capacity" style="width:120px;">
+          <button id="runKnapsackBtn"><i class="fas fa-play"></i> Solve Knapsack</button>
+        </div>
+      </div>
+      <div class="array-container table-visualization" id="knapsackVisualization"></div>
+      <div class="message" id="knapsackMessage"></div>
+    </div>
+    <!-- Graph Colouring Visualizer -->
+    <div id="graphColoring" class="visualizer">
+      <div class="controls">
+        <button id="runColoringBtn"><i class="fas fa-play"></i> Run Graph Colouring</button>
+      </div>
+      <div class="array-container" id="graphColoringVisualization">
+        <svg id="graphColoringSVG" viewBox="0 0 500 300"></svg>
+      </div>
+      <div class="message" id="graphColoringMessage"></div>
+    </div>
+    <!-- N-Queens Visualizer -->
+    <div id="nqueens" class="visualizer">
+      <div class="controls">
+        <div class="input-group">
+          <input type="number" id="nqueensSize" placeholder="Board Size (n)" style="width:120px;">
+          <button id="solveNQueensBtn"><i class="fas fa-play"></i> Solve N-Queens</button>
+        </div>
+      </div>
+      <div class="array-container" id="nqueensVisualization">
+        <!-- Chessboard will be created here -->
+      </div>
+      <div class="message" id="nqueensMessage"></div>
+    </div>
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControlGlobal">
+      <span>Animation Speed</span>
+    </div>
+    <div class="info" id="globalInfo"></div>
+  </div>
+  
+  <script>
+    /* ---------- Tab Switching ---------- */
+    const tabButtons = document.querySelectorAll(".tab-button");
+    const visualizers = document.querySelectorAll(".visualizer");
+    tabButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        const target = button.getAttribute("data-tab");
+        visualizers.forEach(vis => vis.classList.toggle("active", vis.id === target));
+        tabButtons.forEach(btn => btn.classList.toggle("active", btn === button));
+      });
+    });
+    
+    /* ---------- Global Speed Control ---------- */
+    const speedControlGlobal = document.getElementById("speedControlGlobal");
+    speedControlGlobal.addEventListener("input", (e) => {
+      const newDelay = 1000 / e.target.value;
+      if (dijkstraVisualizer) dijkstraVisualizer.animationDelay = newDelay;
+      if (tspVisualizer) tspVisualizer.animationDelay = newDelay;
+      if (knapsackVisualizer) knapsackVisualizer.animationDelay = newDelay;
+      if (graphColoringVisualizer) graphColoringVisualizer.animationDelay = newDelay;
+      if (nQueensVisualizer) nQueensVisualizer.animationDelay = newDelay;
+    });
+    
+    /* ---------- Dijkstra Visualizer ---------- */
+    class DijkstraVisualizer {
+      constructor() {
+        // Fixed graph: 5 nodes with positions and weighted edges.
+        this.nodes = [
+          { id: 0, x: 50, y: 50 },
+          { id: 1, x: 250, y: 50 },
+          { id: 2, x: 450, y: 50 },
+          { id: 3, x: 150, y: 200 },
+          { id: 4, x: 350, y: 200 }
+        ];
+        this.edges = [
+          { from: 0, to: 1, weight: 10 },
+          { from: 0, to: 3, weight: 5 },
+          { from: 1, to: 2, weight: 1 },
+          { from: 1, to: 3, weight: 2 },
+          { from: 3, to: 1, weight: 3 },
+          { from: 3, to: 4, weight: 9 },
+          { from: 4, to: 2, weight: 4 }
+        ];
+        this.distances = Array(this.nodes.length).fill(Infinity);
+        this.visited = Array(this.nodes.length).fill(false);
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.sourceInput = document.getElementById("dijkstraSource");
+        this.runBtn = document.getElementById("runDijkstraBtn");
+        this.svg = document.getElementById("dijkstraSVG");
+        this.message = document.getElementById("dijkstraMessage");
+        this.runBtn.addEventListener("click", () => this.runDijkstra());
+        this.renderGraph();
+      }
+      
+      renderGraph() {
+        while(this.svg.firstChild) this.svg.removeChild(this.svg.firstChild);
+        // Draw edges
+        this.edges.forEach(edge => {
+          const from = this.nodes[edge.from], to = this.nodes[edge.to];
+          let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", from.x);
+          line.setAttribute("y1", from.y);
+          line.setAttribute("x2", to.x);
+          line.setAttribute("y2", to.y);
+          line.setAttribute("stroke", varColor("--primary"));
+          line.setAttribute("stroke-width", 2);
+          this.svg.appendChild(line);
+          // Edge weight
+          let midX = (from.x + to.x) / 2, midY = (from.y + to.y) / 2;
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", midX);
+          text.setAttribute("y", midY - 5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "12px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = edge.weight;
+          this.svg.appendChild(text);
+        });
+        // Draw nodes
+        this.nodes.forEach(node => {
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", node.x);
+          circle.setAttribute("cy", node.y);
+          circle.setAttribute("r", 20);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          circle.setAttribute("fill", varColor("--primary"));
+          this.svg.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", node.x);
+          text.setAttribute("y", node.y + 5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "14px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = node.id;
+          this.svg.appendChild(text);
+        });
+      }
+      
+      async runDijkstra() {
+        let source = parseInt(this.sourceInput.value);
+        if (isNaN(source) || source < 0 || source >= this.nodes.length) {
+          this.message.textContent = "Enter a valid source node (0-4).";
+          return;
+        }
+        this.isAnimating = true;
+        this.distances.fill(Infinity);
+        this.visited.fill(false);
+        this.distances[source] = 0;
+        this.message.textContent = `Running Dijkstra from node ${source}...`;
+        // Simple simulation: at each step, pick the unvisited node with smallest distance.
+        for (let step = 0; step < this.nodes.length; step++) {
+          let u = -1, minDist = Infinity;
+          for (let i = 0; i < this.nodes.length; i++) {
+            if (!this.visited[i] && this.distances[i] < minDist) {
+              minDist = this.distances[i];
+              u = i;
+            }
+          }
+          if (u === -1) break;
+          this.visited[u] = true;
+          this.message.textContent = `Visiting node ${u} (distance ${this.distances[u]})...`;
+          await this.sleep(this.animationDelay);
+          // Relax edges from u
+          this.edges.forEach(edge => {
+            if (edge.from === u && !this.visited[edge.to]) {
+              if (this.distances[u] + edge.weight < this.distances[edge.to]) {
+                this.distances[edge.to] = this.distances[u] + edge.weight;
+              }
+            }
+          });
+        }
+        this.message.textContent = `Dijkstra completed. Distances: ${this.distances.join(", ")}`;
+        this.isAnimating = false;
+      }
+    }
+    const dijkstraVisualizer = new DijkstraVisualizer();
+    
+    /* ---------- TSP Visualizer ---------- */
+    class TSPVisualizer {
+      constructor() {
+        // Fixed small graph: 4 nodes in a circle.
+        this.nodes = [
+          { id: 0, x: 100, y: 150 },
+          { id: 1, x: 250, y: 50 },
+          { id: 2, x: 400, y: 150 },
+          { id: 3, x: 250, y: 250 }
+        ];
+        this.distances = this.computeDistances();
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.svg = document.getElementById("tspSVG");
+        this.message = document.getElementById("tspMessage");
+        this.renderGraph();
+        document.getElementById("runTSPBtn").addEventListener("click", () => this.runTSP());
+      }
+      
+      computeDistances() {
+        let n = this.nodes.length;
+        let dist = Array.from({ length: n }, () => Array(n).fill(0));
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            let dx = this.nodes[i].x - this.nodes[j].x;
+            let dy = this.nodes[i].y - this.nodes[j].y;
+            dist[i][j] = Math.round(Math.sqrt(dx*dx+dy*dy));
+          }
+        }
+        return dist;
+      }
+      
+      renderGraph() {
+        while(this.svg.firstChild) this.svg.removeChild(this.svg.firstChild);
+        // Draw edges (all pairs)
+        for (let i = 0; i < this.nodes.length; i++) {
+          for (let j = i+1; j < this.nodes.length; j++) {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", this.nodes[i].x);
+            line.setAttribute("y1", this.nodes[i].y);
+            line.setAttribute("x2", this.nodes[j].x);
+            line.setAttribute("y2", this.nodes[j].y);
+            line.setAttribute("stroke", varColor("--primary"));
+            line.setAttribute("stroke-width", 1);
+            this.svg.appendChild(line);
+          }
+        }
+        // Draw nodes
+        this.nodes.forEach(node => {
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", node.x);
+          circle.setAttribute("cy", node.y);
+          circle.setAttribute("r", 20);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          circle.setAttribute("fill", varColor("--primary"));
+          this.svg.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", node.x);
+          text.setAttribute("y", node.y+5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "14px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = node.id;
+          this.svg.appendChild(text);
+        });
+      }
+      
+      async runTSP() {
+        this.isAnimating = true;
+        this.message.textContent = "Solving TSP...";
+        let n = this.nodes.length;
+        let perms = this.permute([...Array(n).keys()].slice(1)); // fix node 0 as start
+        let bestDist = Infinity;
+        let bestPath = [];
+        for (let perm of perms) {
+          let path = [0, ...perm, 0];
+          let dist = 0;
+          for (let i = 0; i < path.length - 1; i++) {
+            dist += this.distances[path[i]][path[i+1]];
+          }
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestPath = path;
+          }
+          await this.sleep(this.animationDelay/10);
+        }
+        this.message.textContent = `TSP best path: ${bestPath.join(" → ")} with distance ${bestDist}.`;
+        this.highlightPath(bestPath);
+        this.isAnimating = false;
+      }
+      
+      permute(arr) {
+        if (arr.length === 0) return [[]];
+        let result = [];
+        for (let i = 0; i < arr.length; i++) {
+          let rest = arr.slice(0, i).concat(arr.slice(i+1));
+          let perms = this.permute(rest);
+          perms.forEach(p => result.push([arr[i], ...p]));
+        }
+        return result;
+      }
+      
+      highlightPath(path) {
+        // Redraw graph and draw highlighted path.
+        this.renderGraph();
+        for (let i = 0; i < path.length - 1; i++) {
+          let from = this.nodes[path[i]], to = this.nodes[path[i+1]];
+          let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", from.x);
+          line.setAttribute("y1", from.y);
+          line.setAttribute("x2", to.x);
+          line.setAttribute("y2", to.y);
+          line.setAttribute("stroke", varColor("--warning"));
+          line.setAttribute("stroke-width", 3);
+          this.svg.appendChild(line);
+        }
+      }
+      
+      sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    }
+    const tspVisualizer = new TSPVisualizer();
+    
+    /* ---------- Knapsack Visualizer ---------- */
+    class KnapsackVisualizer {
+      constructor() {
+        this.items = []; // Each item: { weight, value }
+        this.capacity = 0;
+        this.dp = [];
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.itemsInput = document.getElementById("knapsackItems");
+        this.capacityInput = document.getElementById("knapsackCapacity");
+        this.runBtn = document.getElementById("runKnapsackBtn");
+        this.visualization = document.getElementById("knapsackVisualization");
+        this.message = document.getElementById("knapsackMessage");
+        this.runBtn.addEventListener("click", () => this.solveKnapsack());
+        this.updateInfo();
+      }
+      
+      updateInfo(extra="") {
+        document.getElementById("globalInfo").textContent = `Knapsack | Items: ${this.items.length} | Capacity: ${this.capacity} ${extra}`;
+      }
+      
+      renderDP() {
+        let html = "<table><tr><th></th>";
+        for (let w = 0; w <= this.capacity; w++) html += `<th>${w}</th>`;
+        html += "</tr>";
+        for (let i = 0; i <= this.items.length; i++) {
+          html += `<tr><th>${i}</th>`;
+          for (let w = 0; w <= this.capacity; w++) {
+            html += `<td>${this.dp[i][w]}</td>`;
+          }
+          html += "</tr>";
+        }
+        html += "</table>";
+        this.visualization.innerHTML = html;
+      }
+      
+      solveKnapsack() {
+        let inputItems = this.itemsInput.value.split(',')
+          .map(x => x.trim()).filter(x => x);
+        this.items = inputItems.map(str => {
+          let [w, v] = str.split(":").map(Number);
+          return { weight: w, value: v };
+        });
+        this.capacity = parseInt(this.capacityInput.value);
+        if (this.items.length === 0 || isNaN(this.capacity)) {
+          this.message.textContent = "Enter valid items and capacity.";
+          return;
+        }
+        let n = this.items.length;
+        this.dp = Array(n+1).fill(0).map(() => Array(this.capacity+1).fill(0));
+        for (let i = 1; i <= n; i++) {
+          let { weight, value } = this.items[i-1];
+          for (let w = 0; w <= this.capacity; w++) {
+            if (w < weight)
+              this.dp[i][w] = this.dp[i-1][w];
+            else
+              this.dp[i][w] = Math.max(this.dp[i-1][w], this.dp[i-1][w-weight] + value);
+          }
+        }
+        this.renderDP();
+        this.message.textContent = `Maximum value: ${this.dp[n][this.capacity]}`;
+        this.updateInfo();
+      }
+    }
+    const knapsackVisualizer = new KnapsackVisualizer();
+    
+    /* ---------- Graph Colouring Visualizer ---------- */
+    class GraphColoringVisualizer {
+      constructor() {
+        // Fixed graph with 6 nodes and some edges.
+        this.nodes = [
+          { id: 0, x: 100, y: 50 },
+          { id: 1, x: 300, y: 50 },
+          { id: 2, x: 500, y: 50 },
+          { id: 3, x: 150, y: 200 },
+          { id: 4, x: 350, y: 200 },
+          { id: 5, x: 250, y: 300 }
+        ];
+        this.edges = [
+          { from: 0, to: 1 },
+          { from: 1, to: 2 },
+          { from: 0, to: 3 },
+          { from: 1, to: 3 },
+          { from: 1, to: 4 },
+          { from: 2, to: 4 },
+          { from: 3, to: 5 },
+          { from: 4, to: 5 }
+        ];
+        this.colors = ["#FFB6C1", "#ADD8E6", "#90EE90", "#FFFFE0"];
+        this.coloring = Array(this.nodes.length).fill(null);
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.svg = document.getElementById("graphColoringSVG");
+        this.message = document.getElementById("graphColoringMessage");
+        document.getElementById("runColoringBtn").addEventListener("click", () => this.runColoring());
+        this.renderGraph();
+      }
+      
+      renderGraph() {
+        while(this.svg.firstChild) this.svg.removeChild(this.svg.firstChild);
+        // Draw edges
+        this.edges.forEach(edge => {
+          let from = this.nodes[edge.from], to = this.nodes[edge.to];
+          let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", from.x);
+          line.setAttribute("y1", from.y);
+          line.setAttribute("x2", to.x);
+          line.setAttribute("y2", to.y);
+          line.setAttribute("stroke", varColor("--primary"));
+          line.setAttribute("stroke-width", 2);
+          this.svg.appendChild(line);
+        });
+        // Draw nodes
+        this.nodes.forEach((node, idx) => {
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", node.x);
+          circle.setAttribute("cy", node.y);
+          circle.setAttribute("r", 20);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          let fill = this.coloring[idx] ? this.coloring[idx] : varColor("--primary");
+          circle.setAttribute("fill", fill);
+          this.svg.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", node.x);
+          text.setAttribute("y", node.y+5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "14px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = node.id;
+          this.svg.appendChild(text);
+        });
+      }
+      
+      async runColoring() {
+        this.isAnimating = true;
+        // Greedy coloring
+        for (let i = 0; i < this.nodes.length; i++) {
+          let used = new Set();
+          this.edges.forEach(edge => {
+            if (edge.from === i && this.coloring[edge.to] !== null) used.add(this.coloring[edge.to]);
+            if (edge.to === i && this.coloring[edge.from] !== null) used.add(this.coloring[edge.from]);
+          });
+          for (let color of this.colors) {
+            if (!used.has(color)) {
+              this.coloring[i] = color;
+              break;
+            }
+          }
+          this.renderGraph();
+          this.message.textContent = `Colored node ${i} with ${this.coloring[i]}`;
+          await this.sleep(this.animationDelay);
+        }
+        this.message.textContent = "Graph coloring completed.";
+        this.isAnimating = false;
+      }
+      
+      sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    }
+    const graphColoringVisualizer = new GraphColoringVisualizer();
+    
+    /* ---------- N-Queens Visualizer ---------- */
+    class NQueensVisualizer {
+      constructor() {
+        this.n = 8;
+        this.solution = [];
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.sizeInput = document.getElementById("nqueensSize");
+        this.solveBtn = document.getElementById("solveNQueensBtn");
+        this.boardContainer = document.getElementById("nqueensVisualization");
+        this.message = document.getElementById("nqueensMessage");
+        this.solveBtn.addEventListener("click", () => this.solveNQueens());
+        this.updateInfo();
+      }
+      
+      updateInfo(extra="") {
+        document.getElementById("globalInfo").textContent = `N-Queens | Board Size: ${this.n} ${extra}`;
+      }
+      
+      clearBoard() {
+        this.boardContainer.innerHTML = "";
+      }
+      
+      renderBoard(solution) {
+        this.clearBoard();
+        let n = this.n;
+        this.boardContainer.style.setProperty("--n", n);
+        let boardDiv = document.createElement("div");
+        boardDiv.className = "board";
+        boardDiv.style.setProperty("grid-template-columns", `repeat(${n}, 40px)`);
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            let cell = document.createElement("div");
+            cell.className = "cell";
+            if ((i + j) % 2 === 1) cell.classList.add("black");
+            if (solution && solution[i] === j) {
+              cell.classList.add("queen");
+              cell.textContent = "♛";
+            }
+            boardDiv.appendChild(cell);
+          }
+        }
+        this.boardContainer.appendChild(boardDiv);
+      }
+      
+      async solveNQueens() {
+        let n = parseInt(this.sizeInput.value);
+        if (isNaN(n) || n <= 0) {
+          this.message.textContent = "Enter a valid board size.";
+          return;
+        }
+        this.n = n;
+        this.updateInfo();
+        this.message.textContent = "Solving N-Queens...";
+        let solution = [];
+        if (this.solveRec(0, solution)) {
+          this.renderBoard(solution);
+          this.message.textContent = "Solution found.";
+        } else {
+          this.message.textContent = "No solution exists.";
+        }
+      }
+      
+      solveRec(row, solution) {
+        let n = this.n;
+        if (row === n) return true;
+        for (let col = 0; col < n; col++) {
+          if (this.isSafe(row, col, solution)) {
+            solution[row] = col;
+            if (this.solveRec(row + 1, solution)) return true;
+          }
+        }
+        return false;
+      }
+      
+      isSafe(row, col, solution) {
+        for (let i = 0; i < row; i++) {
+          let qCol = solution[i];
+          if (qCol === col || Math.abs(qCol - col) === row - i) return false;
+        }
+        return true;
+      }
+    }
+    const nQueensVisualizer = new NQueensVisualizer();
+    
+    /* ---------- Global Helper ---------- */
+    function varColor(variable) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+    }
+  </script>
+</body>
+</html>

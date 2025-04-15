@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Algorithm Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .controls {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 1rem;
+    }
+
+    input,
+    select,
+    button {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background-color: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    button {
+      cursor: pointer;
+      background-color: var(--primary);
+      border: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+
+    .array-container {
+      background-color: var(--background);
+      padding: 2rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .array-visualization {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .array-element {
+      width: 60px;
+      height: 60px;
+      border: 2px solid var(--border);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .array-element::before {
+      content: attr(data-index);
+      position: absolute;
+      top: -1.5rem;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .array-element.current {
+      background-color: var(--warning);
+      color: var(--background);
+      transform: translateY(-4px);
+      border-color: var(--warning);
+    }
+
+    .array-element.found {
+      background-color: var(--success);
+      color: var(--background);
+      transform: translateY(-4px);
+      border-color: var(--success);
+    }
+
+    .array-element.range {
+      border-color: var(--primary);
+      background-color: rgba(59, 130, 246, 0.1);
+    }
+
+    .message {
+      text-align: center;
+      min-height: 1.5rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .speed-slider {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Search Algorithm Visualizer</h1>
+      <p>Visualize how searching algorithms work step by step</p>
+    </div>
+
+    <div class="controls">
+      <div class="input-group">
+        <input
+          type="text"
+          id="arrayInput"
+          placeholder="Enter numbers (e.g., 1,4,2,7,3)"
+          style="flex: 1;"
+        />
+        <button id="createArray">
+          <i class="fas fa-plus"></i>
+          Create Array
+        </button>
+      </div>
+
+      <div class="input-group">
+        <input type="number" id="targetInput" placeholder="Number to find" />
+        <select id="algorithmSelect">
+          <option value="linear">Linear Search</option>
+          <option value="binary">Binary Search</option>
+        </select>
+        <button id="startSearch">
+          <i class="fas fa-play"></i>
+          Start Search
+        </button>
+        <button id="resetBtn" class="secondary">
+          <i class="fas fa-redo"></i>
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <div class="array-container">
+      <div class="array-visualization" id="arrayVisualization"></div>
+      <div class="message" id="message"></div>
+    </div>
+
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input
+        type="range"
+        min="1"
+        max="5"
+        value="3"
+        class="speed-slider"
+        id="speedControl"
+      />
+      <span>Animation Speed</span>
+    </div>
+
+    <div class="info" id="info"></div>
+  </div>
+
+  <script>
+    class SearchVisualizer {
+      constructor() {
+        this.array = [];
+        this.isSearching = false;
+        // Default delay (ms) controlled by speed slider
+        this.animationDelay = 1000;
+
+        // DOM Elements
+        this.arrayInput = document.getElementById("arrayInput");
+        this.targetInput = document.getElementById("targetInput");
+        this.algorithmSelect = document.getElementById("algorithmSelect");
+        this.arrayVisualization = document.getElementById("arrayVisualization");
+        this.message = document.getElementById("message");
+        this.info = document.getElementById("info");
+        this.speedControl = document.getElementById("speedControl");
+
+        // Buttons
+        this.createArrayBtn = document.getElementById("createArray");
+        this.startSearchBtn = document.getElementById("startSearch");
+        this.resetBtn = document.getElementById("resetBtn");
+
+        // Event Listeners
+        this.createArrayBtn.addEventListener("click", () => this.createArray());
+        this.startSearchBtn.addEventListener("click", () => this.startSearch());
+        this.resetBtn.addEventListener("click", () => this.reset());
+        this.algorithmSelect.addEventListener("change", () =>
+          this.handleAlgorithmChange()
+        );
+        this.speedControl.addEventListener("input", (e) => {
+          // Adjust delay based on slider value (higher slider value means faster animation)
+          this.animationDelay = 1000 / e.target.value;
+        });
+
+        // Initial state
+        this.reset();
+      }
+
+      // Helper to pause execution
+      sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      // Create the array from user input.
+      createArray() {
+        const input = this.arrayInput.value
+          .split(",")
+          .map((x) => parseInt(x.trim()))
+          .filter((x) => !isNaN(x));
+        if (input.length === 0) {
+          this.message.textContent = "Please enter valid numbers";
+          return;
+        }
+
+        // For binary search, sort the array automatically.
+        this.array =
+          this.algorithmSelect.value === "binary"
+            ? [...input].sort((a, b) => a - b)
+            : input;
+        this.visualizeArray();
+        this.reset();
+      }
+
+      // Render the array elements.
+      visualizeArray() {
+        this.arrayVisualization.innerHTML = "";
+        this.array.forEach((num, idx) => {
+          const element = document.createElement("div");
+          element.className = "array-element";
+          element.textContent = num;
+          element.setAttribute("data-index", idx);
+          this.arrayVisualization.appendChild(element);
+        });
+      }
+
+      /**
+       * Update the visualization.
+       * For linear search: pass an array of indices.
+       * For binary search: pass an object {left, mid, right}.
+       * The 'found' flag applies a "found" style to the successful element.
+       */
+      updateVisualization(highlight, found = false) {
+        const elements = this.arrayVisualization.children;
+        for (let i = 0; i < elements.length; i++) {
+          const el = elements[i];
+          el.className = "array-element"; // Reset classes
+
+          // If search is successful, mark the found index.
+          if (found) {
+            if (
+              (Array.isArray(highlight) && highlight.includes(i)) ||
+              (typeof highlight === "object" && highlight.mid === i)
+            ) {
+              el.classList.add("found");
+            }
+            continue;
+          }
+
+          // For linear search: highlight specific index.
+          if (Array.isArray(highlight) && highlight.includes(i)) {
+            el.classList.add("current");
+          }
+          // For binary search: highlight the current range and middle element.
+          else if (typeof highlight === "object") {
+            if (i === highlight.mid) {
+              el.classList.add("current");
+            } else if (i >= highlight.left && i <= highlight.right) {
+              el.classList.add("range");
+            }
+          }
+        }
+      }
+
+      // Perform linear search with step-by-step visualization.
+      async linearSearch(target) {
+        for (let i = 0; i < this.array.length; i++) {
+          this.updateVisualization([i]);
+          this.message.textContent = `Checking index ${i}: ${this.array[i]}`;
+          await this.sleep(this.animationDelay);
+
+          if (this.array[i] === target) {
+            this.updateVisualization([i], true);
+            this.message.textContent = `Found ${target} at index ${i}!`;
+            return true;
+          }
+        }
+        this.message.textContent = `${target} not found in the array`;
+        return false;
+      }
+
+      // Perform binary search with visualization.
+      async binarySearch(target) {
+        let left = 0;
+        let right = this.array.length - 1;
+
+        while (left <= right) {
+          const mid = Math.floor((left + right) / 2);
+          this.updateVisualization({ left, mid, right });
+          this.message.textContent = `Checking middle element at index ${mid}: ${this.array[mid]}`;
+          await this.sleep(this.animationDelay);
+
+          if (this.array[mid] === target) {
+            // Mark the found element by setting left/right equal to mid.
+            this.updateVisualization({ left: mid, mid: mid, right: mid }, true);
+            this.message.textContent = `Found ${target} at index ${mid}!`;
+            return true;
+          }
+
+          if (this.array[mid] < target) {
+            this.message.textContent = `${target} is larger, searching right half`;
+            left = mid + 1;
+          } else {
+            this.message.textContent = `${target} is smaller, searching left half`;
+            right = mid - 1;
+          }
+          await this.sleep(this.animationDelay);
+        }
+
+        this.message.textContent = `${target} not found in the array`;
+        return false;
+      }
+
+      // Start the search process.
+      async startSearch() {
+        if (this.isSearching || this.array.length === 0) return;
+
+        const target = parseInt(this.targetInput.value);
+        if (isNaN(target)) {
+          this.message.textContent = "Please enter a valid number to search";
+          return;
+        }
+
+        this.isSearching = true;
+        this.setControlsEnabled(false);
+
+        if (this.algorithmSelect.value === "linear") {
+          await this.linearSearch(target);
+        } else {
+          await this.binarySearch(target);
+        }
+
+        this.isSearching = false;
+        this.setControlsEnabled(true);
+      }
+
+      // Reset visualization and messages.
+      reset() {
+        this.isSearching = false;
+        this.message.textContent = "";
+        this.setControlsEnabled(true);
+        if (this.array.length > 0) {
+          this.visualizeArray();
+        }
+        this.updateInfo();
+      }
+
+      // When the algorithm is changed, update the array if needed.
+      handleAlgorithmChange() {
+        if (this.array.length > 0 && this.algorithmSelect.value === "binary") {
+          this.array.sort((a, b) => a - b);
+          this.visualizeArray();
+        }
+        this.updateInfo();
+      }
+
+      // Enable or disable controls during the search process.
+      setControlsEnabled(enabled) {
+        this.createArrayBtn.disabled = !enabled;
+        this.startSearchBtn.disabled = !enabled;
+        this.arrayInput.disabled = !enabled;
+        this.targetInput.disabled = !enabled;
+        this.algorithmSelect.disabled = !enabled;
+      }
+
+      // Display helpful information based on the current algorithm.
+      updateInfo() {
+        if (this.algorithmSelect.value === "binary") {
+          this.info.textContent =
+            "Note: Array is automatically sorted for binary search";
+        } else {
+          this.info.textContent = "";
+        }
+      }
+    }
+
+    // Initialize the visualizer
+    const visualizer = new SearchVisualizer();
+  </script>
+</body>
+</html>

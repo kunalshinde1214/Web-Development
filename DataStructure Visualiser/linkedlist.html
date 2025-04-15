@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linked List Operations Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                  0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .controls {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    input,
+    select,
+    button {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background-color: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+    button {
+      cursor: pointer;
+      background-color: var(--primary);
+      border: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+    .array-container {
+      background-color: var(--background);
+      padding: 2rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    /* Linked List Visualization */
+    .list-container {
+      overflow-x: auto;
+      padding: 1rem;
+    }
+    .linkedlist-visualization {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      padding: 10px;
+    }
+    .list-node {
+      width: 60px;
+      height: 60px;
+      border: 2px solid var(--border);
+      border-radius: 0.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      background-color: var(--background);
+      color: var(--text);
+      transition: all 0.3s ease;
+    }
+    .list-node.highlight {
+      background-color: var(--warning);
+      color: var(--background);
+    }
+    .list-node.fresh {
+      background-color: var(--success);
+      color: var(--background);
+    }
+    .arrow {
+      font-size: 1.5rem;
+      color: var(--primary);
+    }
+    .arrow.circular {
+      font-size: 1.5rem;
+      color: var(--success);
+    }
+    /* For doubly linked list, add a small indicator inside nodes */
+    .dbl-indicator {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      font-size: 0.7rem;
+      color: var(--primary);
+    }
+    .message {
+      text-align: center;
+      min-height: 1.5rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .speed-slider {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Linked List Operations Visualizer</h1>
+      <p>Visualize all linked list operations step by step</p>
+    </div>
+
+    <div class="controls">
+      <!-- Choose Linked List Type -->
+      <div class="input-group">
+        <select id="listTypeSelect">
+          <option value="singly">Singly Linked List</option>
+          <option value="doubly">Doubly Linked List</option>
+          <option value="circular">Circular Linked List</option>
+        </select>
+      </div>
+
+      <!-- Insertion Controls -->
+      <div class="input-group">
+        <input type="text" id="insertValue" placeholder="Value to insert" style="flex: 1;">
+        <select id="insertPositionSelect">
+          <option value="head">At Head</option>
+          <option value="tail">At Tail</option>
+          <option value="index">At Index</option>
+        </select>
+        <input type="number" id="insertIndex" placeholder="Index" style="display:none; width:80px;">
+        <button id="insertBtn">
+          <i class="fas fa-plus"></i> Insert
+        </button>
+      </div>
+
+      <!-- Deletion Controls -->
+      <div class="input-group">
+        <select id="deleteOptionSelect">
+          <option value="head">Delete Head</option>
+          <option value="tail">Delete Tail</option>
+          <option value="index">Delete At Index</option>
+          <option value="value">Delete By Value</option>
+        </select>
+        <input type="number" id="deleteIndex" placeholder="Index" style="display:none; width:80px;">
+        <input type="text" id="deleteValue" placeholder="Value" style="display:none; flex: 1;">
+        <button id="deleteBtn">
+          <i class="fas fa-minus"></i> Delete
+        </button>
+      </div>
+
+      <!-- Update Controls -->
+      <div class="input-group">
+        <input type="number" id="updateIndex" placeholder="Index to update" style="width:80px;">
+        <input type="text" id="updateValue" placeholder="New value" style="flex: 1;">
+        <button id="updateBtn">
+          <i class="fas fa-edit"></i> Update
+        </button>
+      </div>
+
+      <!-- Search Controls -->
+      <div class="input-group">
+        <input type="text" id="searchValue" placeholder="Value to search" style="flex: 1;">
+        <button id="searchBtn">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </div>
+
+      <!-- Clear and Reverse -->
+      <div class="input-group">
+        <button id="clearBtn" class="secondary">
+          <i class="fas fa-redo"></i> Clear
+        </button>
+        <button id="reverseBtn" class="secondary">
+          <i class="fas fa-sync-alt"></i> Reverse
+        </button>
+      </div>
+    </div>
+
+    <div class="array-container">
+      <div class="list-container">
+        <div class="linkedlist-visualization" id="listVisualization"></div>
+      </div>
+      <div class="message" id="message"></div>
+    </div>
+
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControl">
+      <span>Animation Speed</span>
+    </div>
+
+    <div class="info" id="info"></div>
+  </div>
+
+  <script>
+    class LinkedListVisualizer {
+      constructor() {
+        this.list = [];
+        this.listType = "singly"; // "singly", "doubly", or "circular"
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+
+        // DOM Elements
+        this.listTypeSelect = document.getElementById("listTypeSelect");
+        this.insertValueInput = document.getElementById("insertValue");
+        this.insertPositionSelect = document.getElementById("insertPositionSelect");
+        this.insertIndexInput = document.getElementById("insertIndex");
+        this.insertBtn = document.getElementById("insertBtn");
+
+        this.deleteOptionSelect = document.getElementById("deleteOptionSelect");
+        this.deleteIndexInput = document.getElementById("deleteIndex");
+        this.deleteValueInput = document.getElementById("deleteValue");
+        this.deleteBtn = document.getElementById("deleteBtn");
+
+        this.updateIndexInput = document.getElementById("updateIndex");
+        this.updateValueInput = document.getElementById("updateValue");
+        this.updateBtn = document.getElementById("updateBtn");
+
+        this.searchValueInput = document.getElementById("searchValue");
+        this.searchBtn = document.getElementById("searchBtn");
+
+        this.clearBtn = document.getElementById("clearBtn");
+        this.reverseBtn = document.getElementById("reverseBtn");
+
+        this.listVisualization = document.getElementById("listVisualization");
+        this.message = document.getElementById("message");
+        this.speedControl = document.getElementById("speedControl");
+        this.info = document.getElementById("info");
+
+        // Event Listeners
+        this.listTypeSelect.addEventListener("change", () => this.changeListType());
+        this.insertPositionSelect.addEventListener("change", () => this.toggleInsertIndex());
+        this.deleteOptionSelect.addEventListener("change", () => this.toggleDeleteInputs());
+
+        this.insertBtn.addEventListener("click", () => this.insert());
+        this.deleteBtn.addEventListener("click", () => this.delete());
+        this.updateBtn.addEventListener("click", () => this.update());
+        this.searchBtn.addEventListener("click", () => this.search());
+        this.clearBtn.addEventListener("click", () => this.clear());
+        this.reverseBtn.addEventListener("click", () => this.reverse());
+
+        this.speedControl.addEventListener("input", (e) => {
+          this.animationDelay = 1000 / e.target.value;
+        });
+
+        this.updateInfo();
+        this.updateVisualization();
+      }
+
+      sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      setControlsEnabled(enabled) {
+        this.listTypeSelect.disabled = !enabled;
+        this.insertValueInput.disabled = !enabled;
+        this.insertPositionSelect.disabled = !enabled;
+        this.insertIndexInput.disabled = !enabled;
+        this.insertBtn.disabled = !enabled;
+        this.deleteOptionSelect.disabled = !enabled;
+        this.deleteIndexInput.disabled = !enabled;
+        this.deleteValueInput.disabled = !enabled;
+        this.deleteBtn.disabled = !enabled;
+        this.updateIndexInput.disabled = !enabled;
+        this.updateValueInput.disabled = !enabled;
+        this.updateBtn.disabled = !enabled;
+        this.searchValueInput.disabled = !enabled;
+        this.searchBtn.disabled = !enabled;
+        this.clearBtn.disabled = !enabled;
+        this.reverseBtn.disabled = !enabled;
+      }
+
+      updateInfo() {
+        this.info.textContent = `Type: ${
+          this.listType.charAt(0).toUpperCase() + this.listType.slice(1)
+        } Linked List | Size: ${this.list.length}`;
+      }
+
+      changeListType() {
+        this.listType = this.listTypeSelect.value;
+        this.clear(true); // clear instantly without animation
+        this.updateInfo();
+      }
+
+      toggleInsertIndex() {
+        if (this.insertPositionSelect.value === "index") {
+          this.insertIndexInput.style.display = "inline-block";
+        } else {
+          this.insertIndexInput.style.display = "none";
+        }
+      }
+
+      toggleDeleteInputs() {
+        let option = this.deleteOptionSelect.value;
+        if (option === "index") {
+          this.deleteIndexInput.style.display = "inline-block";
+          this.deleteValueInput.style.display = "none";
+        } else if (option === "value") {
+          this.deleteIndexInput.style.display = "none";
+          this.deleteValueInput.style.display = "inline-block";
+        } else {
+          this.deleteIndexInput.style.display = "none";
+          this.deleteValueInput.style.display = "none";
+        }
+      }
+
+      updateVisualization(highlightIndex = null, highlightClass = "") {
+        this.listVisualization.innerHTML = "";
+        for (let i = 0; i < this.list.length; i++) {
+          // Create node element
+          let node = document.createElement("div");
+          node.className = "list-node";
+          node.textContent = this.list[i];
+          if (highlightIndex !== null && i === highlightIndex) {
+            node.classList.add(highlightClass);
+          }
+          this.listVisualization.appendChild(node);
+          // Add arrow between nodes if not the last one
+          if (i < this.list.length - 1) {
+            let arrow = document.createElement("span");
+            arrow.className = "arrow";
+            arrow.textContent = "→";
+            this.listVisualization.appendChild(arrow);
+          }
+        }
+        // For circular linked list, if not empty, add a circular arrow indicator at the end
+        if (this.listType === "circular" && this.list.length > 0) {
+          let circularArrow = document.createElement("span");
+          circularArrow.className = "arrow circular";
+          circularArrow.textContent = "↺";
+          this.listVisualization.appendChild(circularArrow);
+        }
+        // For doubly linked list, add a small indicator inside each node
+        if (this.listType === "doubly") {
+          let nodes = this.listVisualization.getElementsByClassName("list-node");
+          for (let node of nodes) {
+            let dblIndicator = document.createElement("div");
+            dblIndicator.className = "dbl-indicator";
+            dblIndicator.textContent = "⇆";
+            node.appendChild(dblIndicator);
+          }
+        }
+        this.updateInfo();
+      }
+
+      async insert() {
+        if (this.isAnimating) return;
+        let value = this.insertValueInput.value.trim();
+        if (value === "") {
+          this.message.textContent = "Please enter a value to insert.";
+          return;
+        }
+        let position = this.insertPositionSelect.value;
+        let index = 0;
+        if (position === "index") {
+          index = parseInt(this.insertIndexInput.value);
+          if (isNaN(index) || index < 0 || index > this.list.length) {
+            this.message.textContent = "Invalid index.";
+            return;
+          }
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Inserting ${value} at ${position}${
+          position === "index" ? " " + index : ""
+        }...`;
+        await this.sleep(this.animationDelay);
+
+        if (position === "head") {
+          this.list.unshift(value);
+        } else if (position === "tail") {
+          this.list.push(value);
+        } else if (position === "index") {
+          this.list.splice(index, 0, value);
+        }
+        this.updateVisualization(
+          position === "head"
+            ? 0
+            : position === "tail"
+            ? this.list.length - 1
+            : index,
+          "fresh"
+        );
+        await this.sleep(this.animationDelay);
+        this.message.textContent = `Inserted ${value}.`;
+        this.insertValueInput.value = "";
+        this.insertIndexInput.value = "";
+        this.updateVisualization();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+
+      async delete() {
+        if (this.isAnimating) return;
+        let option = this.deleteOptionSelect.value;
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        let removedValue = null;
+        if (option === "head") {
+          if (this.list.length === 0) {
+            this.message.textContent = "List is empty.";
+            this.isAnimating = false;
+            this.setControlsEnabled(true);
+            return;
+          }
+          removedValue = this.list[0];
+          this.updateVisualization(0, "highlight");
+          this.message.textContent = `Deleting head (${removedValue})...`;
+          await this.sleep(this.animationDelay);
+          this.list.shift();
+        } else if (option === "tail") {
+          if (this.list.length === 0) {
+            this.message.textContent = "List is empty.";
+            this.isAnimating = false;
+            this.setControlsEnabled(true);
+            return;
+          }
+          removedValue = this.list[this.list.length - 1];
+          this.updateVisualization(this.list.length - 1, "highlight");
+          this.message.textContent = `Deleting tail (${removedValue})...`;
+          await this.sleep(this.animationDelay);
+          this.list.pop();
+        } else if (option === "index") {
+          let idx = parseInt(this.deleteIndexInput.value);
+          if (isNaN(idx) || idx < 0 || idx >= this.list.length) {
+            this.message.textContent = "Invalid index.";
+            this.isAnimating = false;
+            this.setControlsEnabled(true);
+            return;
+          }
+          removedValue = this.list[idx];
+          this.updateVisualization(idx, "highlight");
+          this.message.textContent = `Deleting at index ${idx} (${removedValue})...`;
+          await this.sleep(this.animationDelay);
+          this.list.splice(idx, 1);
+        } else if (option === "value") {
+          let val = this.deleteValueInput.value.trim();
+          let idx = this.list.indexOf(val);
+          if (idx === -1) {
+            this.message.textContent = `Value ${val} not found.`;
+            this.isAnimating = false;
+            this.setControlsEnabled(true);
+            return;
+          }
+          removedValue = this.list[idx];
+          this.updateVisualization(idx, "highlight");
+          this.message.textContent = `Deleting value ${val} at index ${idx}...`;
+          await this.sleep(this.animationDelay);
+          this.list.splice(idx, 1);
+        }
+        this.updateVisualization();
+        this.message.textContent = `Deleted ${removedValue}.`;
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+
+      async update() {
+        if (this.isAnimating) return;
+        let idx = parseInt(this.updateIndexInput.value);
+        let newValue = this.updateValueInput.value.trim();
+        if (isNaN(idx) || idx < 0 || idx >= this.list.length) {
+          this.message.textContent = "Invalid index.";
+          return;
+        }
+        if (newValue === "") {
+          this.message.textContent = "Please enter a new value.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = `Updating index ${idx} to ${newValue}...`;
+        this.updateVisualization(idx, "highlight");
+        await this.sleep(this.animationDelay);
+        this.list[idx] = newValue;
+        this.updateVisualization(idx, "fresh");
+        await this.sleep(this.animationDelay);
+        this.message.textContent = `Updated index ${idx}.`;
+        this.updateIndexInput.value = "";
+        this.updateValueInput.value = "";
+        this.updateVisualization();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+
+      async search() {
+        if (this.isAnimating) return;
+        let val = this.searchValueInput.value.trim();
+        if (val === "") {
+          this.message.textContent = "Please enter a value to search.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        let idx = this.list.indexOf(val);
+        if (idx === -1) {
+          this.message.textContent = `Value ${val} not found.`;
+        } else {
+          this.message.textContent = `Value ${val} found at index ${idx}.`;
+          this.updateVisualization(idx, "highlight");
+          await this.sleep(this.animationDelay);
+        }
+        this.updateVisualization();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+
+      async clear(skipAnimation = false) {
+        if (this.isAnimating) return;
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = "Clearing the list...";
+        if (!skipAnimation) {
+          while (this.list.length > 0) {
+            this.updateVisualization(0, "highlight");
+            await this.sleep(this.animationDelay / 2);
+            this.list.shift();
+            this.updateVisualization();
+            await this.sleep(this.animationDelay / 2);
+          }
+        } else {
+          this.list = [];
+        }
+        this.message.textContent = "List cleared.";
+        this.updateVisualization();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+
+      async reverse() {
+        if (this.isAnimating) return;
+        if (this.list.length === 0) {
+          this.message.textContent = "List is empty.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = "Reversing the list...";
+        await this.sleep(this.animationDelay);
+        this.list.reverse();
+        this.updateVisualization();
+        this.message.textContent = "List reversed.";
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+      }
+    }
+
+    // Initialize the visualizer
+    const linkedListVisualizer = new LinkedListVisualizer();
+  </script>
+</body>
+</html>

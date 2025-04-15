@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stack Operations Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .controls {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 1rem;
+    }
+
+    input,
+    select,
+    button {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background-color: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    button {
+      cursor: pointer;
+      background-color: var(--primary);
+      border: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+
+    .array-container {
+      background-color: var(--background);
+      padding: 2rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Stack Visualization Styles */
+    .stack-visualization {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: center;
+      min-height: 200px;
+    }
+
+    /* Reuse array-element styling for stack elements */
+    .stack-element {
+      width: 60px;
+      height: 60px;
+      border: 2px solid var(--border);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    /* Remove index label for stack elements */
+    .stack-element::before {
+      display: none;
+    }
+
+    /* Highlight styles for animations */
+    .stack-element.fresh {
+      background-color: var(--success);
+      color: var(--background);
+      transform: translateY(-4px);
+      border-color: var(--success);
+    }
+
+    .stack-element.highlight {
+      background-color: var(--warning);
+      color: var(--background);
+      transform: translateY(-4px);
+      border-color: var(--warning);
+    }
+
+    .message {
+      text-align: center;
+      min-height: 1.5rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .speed-slider {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Stack Operations Visualizer</h1>
+      <p>Visualize stack operations step by step</p>
+    </div>
+
+    <div class="controls">
+      <!-- Push Operation -->
+      <div class="input-group">
+        <input
+          type="text"
+          id="pushInput"
+          placeholder="Enter value to push"
+          style="flex: 1;"
+        />
+        <button id="pushBtn">
+          <i class="fas fa-plus"></i>
+          Push
+        </button>
+      </div>
+      <!-- Other Operations: Pop, Peek, Clear -->
+      <div class="input-group">
+        <button id="popBtn">
+          <i class="fas fa-minus"></i>
+          Pop
+        </button>
+        <button id="peekBtn">
+          <i class="fas fa-eye"></i>
+          Peek
+        </button>
+        <button id="clearBtn" class="secondary">
+          <i class="fas fa-redo"></i>
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <div class="array-container">
+      <div class="stack-visualization" id="stackVisualization"></div>
+      <div class="message" id="message"></div>
+    </div>
+
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input
+        type="range"
+        min="1"
+        max="5"
+        value="3"
+        class="speed-slider"
+        id="speedControl"
+      />
+      <span>Animation Speed</span>
+    </div>
+
+    <div class="info" id="info"></div>
+  </div>
+
+  <script>
+    class StackVisualizer {
+      constructor() {
+        this.stack = [];
+        this.isAnimating = false;
+        // Default delay (ms) controlled by speed slider
+        this.animationDelay = 1000;
+
+        // DOM Elements
+        this.pushInput = document.getElementById("pushInput");
+        this.pushBtn = document.getElementById("pushBtn");
+        this.popBtn = document.getElementById("popBtn");
+        this.peekBtn = document.getElementById("peekBtn");
+        this.clearBtn = document.getElementById("clearBtn");
+        this.stackVisualization = document.getElementById("stackVisualization");
+        this.message = document.getElementById("message");
+        this.speedControl = document.getElementById("speedControl");
+
+        // Event Listeners
+        this.pushBtn.addEventListener("click", () => this.push());
+        this.popBtn.addEventListener("click", () => this.pop());
+        this.peekBtn.addEventListener("click", () => this.peek());
+        this.clearBtn.addEventListener("click", () => this.clear());
+        this.speedControl.addEventListener("input", (e) => {
+          // Adjust delay based on slider value (higher value = faster animation)
+          this.animationDelay = 1000 / e.target.value;
+        });
+      }
+
+      // Helper to pause execution (for animation)
+      sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      // Enable or disable controls during animations
+      setControlsEnabled(enabled) {
+        this.pushBtn.disabled = !enabled;
+        this.popBtn.disabled = !enabled;
+        this.peekBtn.disabled = !enabled;
+        this.clearBtn.disabled = !enabled;
+        this.pushInput.disabled = !enabled;
+      }
+
+      // Update the visualization of the stack.
+      // Optionally highlight an element at a given index using a specified type.
+      updateVisualization(highlightIndex = null, highlightType = "") {
+        // Clear the stack visualization container
+        this.stackVisualization.innerHTML = "";
+        // Render each stack element. The top of the stack is the last element.
+        for (let i = 0; i < this.stack.length; i++) {
+          const value = this.stack[i];
+          const element = document.createElement("div");
+          element.className = "stack-element";
+          element.textContent = value;
+          // If this element should be highlighted, add the corresponding class.
+          if (highlightIndex !== null && i === highlightIndex) {
+            if (highlightType === "fresh") {
+              element.classList.add("fresh");
+            } else if (highlightType === "highlight") {
+              element.classList.add("highlight");
+            }
+          }
+          this.stackVisualization.appendChild(element);
+        }
+      }
+
+      // Push a new value onto the stack.
+      async push() {
+        if (this.isAnimating) return;
+        const value = this.pushInput.value.trim();
+        if (value === "") {
+          this.message.textContent = "Please enter a value to push.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.message.textContent = `Pushing ${value} onto the stack...`;
+
+        // Simulate push animation by adding the element and highlighting it.
+        this.stack.push(value);
+        this.updateVisualization(this.stack.length - 1, "fresh");
+        await this.sleep(this.animationDelay);
+
+        this.message.textContent = `Pushed ${value}.`;
+        this.pushInput.value = "";
+        this.updateVisualization();
+        this.setControlsEnabled(true);
+      }
+
+      // Pop the top element from the stack.
+      async pop() {
+        if (this.isAnimating) return;
+        if (this.stack.length === 0) {
+          this.message.textContent = "Stack is empty. Nothing to pop.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        const value = this.stack[this.stack.length - 1];
+        this.message.textContent = `Popping ${value} from the stack...`;
+        // Highlight the top element before removal.
+        this.updateVisualization(this.stack.length - 1, "highlight");
+        await this.sleep(this.animationDelay);
+        this.stack.pop();
+        this.updateVisualization();
+        this.message.textContent = `Popped ${value}.`;
+        this.setControlsEnabled(true);
+      }
+
+      // Peek at the top element of the stack.
+      async peek() {
+        if (this.stack.length === 0) {
+          this.message.textContent = "Stack is empty. Nothing to peek.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        const value = this.stack[this.stack.length - 1];
+        this.message.textContent = `Peeking at the top element: ${value}.`;
+        // Highlight the top element temporarily.
+        this.updateVisualization(this.stack.length - 1, "highlight");
+        await this.sleep(this.animationDelay);
+        this.updateVisualization();
+        this.message.textContent = `Top element is ${value}.`;
+        this.setControlsEnabled(true);
+      }
+
+      // Clear the entire stack.
+      async clear() {
+        if (this.isAnimating) return;
+        if (this.stack.length === 0) {
+          this.message.textContent = "Stack is already empty.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.message.textContent = "Clearing the stack...";
+        // Optionally animate the removal of each element.
+        while (this.stack.length > 0) {
+          this.updateVisualization(this.stack.length - 1, "highlight");
+          await this.sleep(this.animationDelay / 2);
+          this.stack.pop();
+          this.updateVisualization();
+          await this.sleep(this.animationDelay / 2);
+        }
+        this.message.textContent = "Stack cleared.";
+        this.setControlsEnabled(true);
+      }
+    }
+
+    // Initialize the stack visualizer
+    const stackVisualizer = new StackVisualizer();
+  </script>
+</body>
+</html>

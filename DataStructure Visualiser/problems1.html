@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custom Graph Algorithms Visualizer</title>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    /* Common Styles */
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--background); color: var(--text); min-height: 100vh;
+           display: flex; justify-content: center; align-items: center; padding: 2rem; }
+    .container { max-width: 1000px; width: 100%; background-color: var(--card-bg);
+                 border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
+                 0 2px 4px -1px rgba(0,0,0,0.06); }
+    .header { text-align: center; margin-bottom: 2rem; }
+    .header h1 { font-size: 2rem; margin-bottom: 0.5rem;
+                 background: linear-gradient(45deg, var(--primary), #60a5fa);
+                 -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .tabs { display: flex; justify-content: center; margin-bottom: 1rem; }
+    .tab-button { padding: 0.75rem 1rem; margin: 0 0.5rem; border: 1px solid var(--border);
+                  border-radius: 0.5rem; background-color: var(--background);
+                  color: var(--text); cursor: pointer; }
+    .tab-button.active { background-color: var(--primary); }
+    .visualizer { display: none; }
+    .visualizer.active { display: block; }
+    .controls { display: grid; gap: 1rem; margin-bottom: 1rem; }
+    .input-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    input, select, button {
+      padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem;
+      background-color: var(--background); color: var(--text); font-size: 1rem; outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
+    button { cursor: pointer; background-color: var(--primary); border: none;
+             font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.secondary { background-color: transparent; border: 1px solid var(--primary); }
+    .array-container { background-color: var(--background); padding: 1rem;
+                       border-radius: 0.5rem; margin-bottom: 1rem; }
+    .message { text-align: center; min-height: 1.5rem; font-size: 1.1rem; color: #94a3b8; }
+    .info { text-align: center; color: #64748b; font-size: 0.875rem; margin-top: 1rem; }
+    .speed-control { display: flex; align-items: center; gap: 1rem;
+                     justify-content: center; margin-top: 1rem; }
+    .speed-slider { width: 200px; }
+    .tree-container { border: 2px dashed var(--border); border-radius: 0.5rem;
+                      min-height: 300px; position: relative; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Custom Graph Algorithms Visualizer</h1>
+      <p>Dijkstra’s Algorithm &amp; TSP with Custom Input &amp; Step-by-Step Solving</p>
+    </div>
+    <div class="tabs">
+      <button class="tab-button active" data-tab="dijkstra">Dijkstra</button>
+      <button class="tab-button" data-tab="tsp">TSP</button>
+    </div>
+    <!-- Dijkstra Visualizer -->
+    <div id="dijkstra" class="visualizer active">
+      <div class="controls">
+        <div class="input-group">
+          <textarea id="dijkstraNodesInput" placeholder="Enter nodes as: id,x,y; separated by semicolons (e.g., 0,100,150; 1,250,50; 2,400,150)" style="flex:1;"></textarea>
+        </div>
+        <div class="input-group">
+          <textarea id="dijkstraEdgesInput" placeholder="Enter edges as: from:to:weight, separated by commas (e.g., 0:1:10, 0:2:5, 1:2:1)" style="flex:1;"></textarea>
+        </div>
+        <div class="input-group">
+          <input type="number" id="dijkstraSource" placeholder="Source Node ID" style="width:120px;">
+          <button id="runDijkstraBtn"><i class="fas fa-play"></i> Run Dijkstra</button>
+        </div>
+      </div>
+      <div class="array-container tree-container" id="dijkstraSVGContainer">
+        <svg id="dijkstraSVG" viewBox="0 0 500 300"></svg>
+      </div>
+      <div class="message" id="dijkstraMessage"></div>
+    </div>
+    <!-- TSP Visualizer -->
+    <div id="tsp" class="visualizer">
+      <div class="controls">
+        <div class="input-group">
+          <textarea id="tspNodesInput" placeholder="Enter nodes as: id,x,y; separated by semicolons (e.g., 0,100,150; 1,250,50; 2,400,150; 3,250,250)" style="flex:1;"></textarea>
+        </div>
+        <div class="input-group">
+          <button id="runTSPBtn"><i class="fas fa-play"></i> Solve TSP</button>
+        </div>
+      </div>
+      <div class="array-container tree-container" id="tspSVGContainer">
+        <svg id="tspSVG" viewBox="0 0 500 300"></svg>
+      </div>
+      <div class="message" id="tspMessage"></div>
+    </div>
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControlGlobal">
+      <span>Animation Speed</span>
+    </div>
+    <div class="info" id="globalInfo"></div>
+  </div>
+  
+  <script>
+    /* ---------- Tab Switching ---------- */
+    const tabButtons = document.querySelectorAll(".tab-button");
+    const visualizers = document.querySelectorAll(".visualizer");
+    tabButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        const target = button.getAttribute("data-tab");
+        visualizers.forEach(vis => vis.classList.toggle("active", vis.id === target));
+        tabButtons.forEach(btn => btn.classList.toggle("active", btn === button));
+      });
+    });
+    
+    /* ---------- Global Speed Control ---------- */
+    const speedControlGlobal = document.getElementById("speedControlGlobal");
+    speedControlGlobal.addEventListener("input", (e) => {
+      const newDelay = 1000 / e.target.value;
+      if (dijkstraVisualizer) dijkstraVisualizer.animationDelay = newDelay;
+      if (tspVisualizer) tspVisualizer.animationDelay = newDelay;
+    });
+    
+    /* ---------- Dijkstra Visualizer ---------- */
+    class DijkstraVisualizer {
+      constructor() {
+        this.nodes = [];
+        this.edges = [];
+        this.distances = [];
+        this.visited = [];
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.nodesInput = document.getElementById("dijkstraNodesInput");
+        this.edgesInput = document.getElementById("dijkstraEdgesInput");
+        this.sourceInput = document.getElementById("dijkstraSource");
+        this.runBtn = document.getElementById("runDijkstraBtn");
+        this.svg = document.getElementById("dijkstraSVG");
+        this.message = document.getElementById("dijkstraMessage");
+        
+        this.runBtn.addEventListener("click", () => this.runDijkstra());
+      }
+      
+      parseNodes() {
+        // Expecting format: "id,x,y; id,x,y; ..."
+        let str = this.nodesInput.value;
+        this.nodes = str.split(";").map(s => s.trim()).filter(s => s).map(s => {
+          let parts = s.split(",");
+          return { id: parseInt(parts[0]), x: parseFloat(parts[1]), y: parseFloat(parts[2]) };
+        });
+      }
+      
+      parseEdges() {
+        // Expecting format: "from:to:weight, from:to:weight, ..."
+        let str = this.edgesInput.value;
+        this.edges = str.split(",").map(s => s.trim()).filter(s => s).map(s => {
+          let parts = s.split(":");
+          return { from: parseInt(parts[0]), to: parseInt(parts[1]), weight: parseFloat(parts[2]) };
+        });
+      }
+      
+      renderGraph(current = null) {
+        while(this.svg.firstChild) this.svg.removeChild(this.svg.firstChild);
+        // Draw edges
+        this.edges.forEach(edge => {
+          let fromNode = this.nodes.find(n => n.id === edge.from);
+          let toNode = this.nodes.find(n => n.id === edge.to);
+          if (!fromNode || !toNode) return;
+          let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", fromNode.x);
+          line.setAttribute("y1", fromNode.y);
+          line.setAttribute("x2", toNode.x);
+          line.setAttribute("y2", toNode.y);
+          line.setAttribute("stroke", varColor("--primary"));
+          line.setAttribute("stroke-width", 2);
+          this.svg.appendChild(line);
+          // Show weight at midpoint
+          let midX = (fromNode.x + toNode.x)/2;
+          let midY = (fromNode.y + toNode.y)/2;
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", midX);
+          text.setAttribute("y", midY - 5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "12px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = edge.weight;
+          this.svg.appendChild(text);
+        });
+        // Draw nodes
+        this.nodes.forEach(node => {
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", node.x);
+          circle.setAttribute("cy", node.y);
+          circle.setAttribute("r", 20);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          // Highlight if current
+          if (current !== null && node.id === current) {
+            circle.setAttribute("fill", varColor("--warning"));
+          } else {
+            circle.setAttribute("fill", varColor("--primary"));
+          }
+          this.svg.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", node.x);
+          text.setAttribute("y", node.y+5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "14px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = node.id;
+          this.svg.appendChild(text);
+        });
+      }
+      
+      async runDijkstra() {
+        this.parseNodes();
+        this.parseEdges();
+        let source = parseInt(this.sourceInput.value);
+        if (isNaN(source) || !this.nodes.find(n => n.id === source)) {
+          this.message.textContent = "Enter a valid source node ID.";
+          return;
+        }
+        // Initialize distances and visited arrays.
+        let n = this.nodes.length;
+        this.distances = Array(n).fill(Infinity);
+        this.visited = Array(n).fill(false);
+        // Map node id to index in nodes array (assume nodes sorted by id)
+        let idToIndex = {};
+        this.nodes.forEach((node, i) => { idToIndex[node.id] = i; });
+        this.distances[idToIndex[source]] = 0;
+        this.renderGraph(source);
+        this.message.textContent = `Starting Dijkstra from node ${source}...`;
+        await this.sleep(this.animationDelay);
+        
+        for (let i = 0; i < n; i++) {
+          // Find unvisited node with smallest distance.
+          let u = -1, minDist = Infinity;
+          for (let j = 0; j < n; j++) {
+            if (!this.visited[j] && this.distances[j] < minDist) {
+              minDist = this.distances[j];
+              u = j;
+            }
+          }
+          if (u === -1) break;
+          this.visited[u] = true;
+          let currentNode = this.nodes[u];
+          this.message.textContent = `Visiting node ${currentNode.id} (distance ${this.distances[u]})`;
+          this.renderGraph(currentNode.id);
+          await this.sleep(this.animationDelay);
+          // Relax neighbors
+          this.edges.forEach(edge => {
+            if (edge.from === currentNode.id) {
+              let vIndex = idToIndex[edge.to];
+              if (!this.visited[vIndex] && this.distances[u] + edge.weight < this.distances[vIndex]) {
+                this.distances[vIndex] = this.distances[u] + edge.weight;
+                this.message.textContent = `Updated distance for node ${edge.to} to ${this.distances[vIndex]}`;
+              }
+            }
+          });
+          await this.sleep(this.animationDelay);
+        }
+        this.message.textContent = `Dijkstra completed. Final distances: ${this.distances.join(", ")}`;
+        this.renderGraph();
+      }
+      
+      sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    }
+    const dijkstraVisualizer = new DijkstraVisualizer();
+    
+    /* ---------- TSP Visualizer ---------- */
+    class TSPVisualizer {
+      constructor() {
+        this.nodes = [];
+        this.distances = [];
+        this.bestPath = [];
+        this.bestDistance = Infinity;
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.nodesInput = document.getElementById("tspNodesInput");
+        this.runBtn = document.getElementById("runTSPBtn");
+        this.svg = document.getElementById("tspSVG");
+        this.message = document.getElementById("tspMessage");
+        this.runBtn.addEventListener("click", () => this.runTSP());
+      }
+      
+      parseNodes() {
+        // Format: "id,x,y; id,x,y; ..."
+        let str = this.nodesInput.value;
+        this.nodes = str.split(";").map(s => s.trim()).filter(s => s).map(s => {
+          let parts = s.split(",");
+          return { id: parseInt(parts[0]), x: parseFloat(parts[1]), y: parseFloat(parts[2]) };
+        });
+      }
+      
+      computeDistances() {
+        let n = this.nodes.length;
+        this.distances = Array(n).fill(0).map(() => Array(n).fill(0));
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            let dx = this.nodes[i].x - this.nodes[j].x;
+            let dy = this.nodes[i].y - this.nodes[j].y;
+            this.distances[i][j] = Math.round(Math.hypot(dx,dy));
+          }
+        }
+      }
+      
+      renderGraph() {
+        while(this.svg.firstChild) this.svg.removeChild(this.svg.firstChild);
+        // Draw edges (all pairs lightly)
+        for (let i = 0; i < this.nodes.length; i++) {
+          for (let j = i+1; j < this.nodes.length; j++) {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", this.nodes[i].x);
+            line.setAttribute("y1", this.nodes[i].y);
+            line.setAttribute("x2", this.nodes[j].x);
+            line.setAttribute("y2", this.nodes[j].y);
+            line.setAttribute("stroke", "#555");
+            line.setAttribute("stroke-width", 1);
+            this.svg.appendChild(line);
+          }
+        }
+        // Draw nodes
+        this.nodes.forEach(node => {
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", node.x);
+          circle.setAttribute("cy", node.y);
+          circle.setAttribute("r", 20);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          circle.setAttribute("fill", varColor("--primary"));
+          this.svg.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", node.x);
+          text.setAttribute("y", node.y+5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "14px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = node.id;
+          this.svg.appendChild(text);
+        });
+      }
+      
+      async runTSP() {
+        this.parseNodes();
+        if (this.nodes.length < 2) {
+          this.message.textContent = "Enter at least 2 nodes.";
+          return;
+        }
+        this.computeDistances();
+        this.renderGraph();
+        this.isAnimating = true;
+        this.bestDistance = Infinity;
+        this.bestPath = [];
+        this.message.textContent = "Solving TSP...";
+        // Fix starting node as 0.
+        let nodesIndices = [...Array(this.nodes.length).keys()];
+        let perms = this.permute(nodesIndices.slice(1));
+        for (let perm of perms) {
+          let path = [0, ...perm, 0];
+          let dist = 0;
+          for (let i = 0; i < path.length - 1; i++) {
+            dist += this.distances[path[i]][path[i+1]];
+          }
+          // For visualization, draw current path in faint color.
+          this.highlightPath(path, "#aaa");
+          await this.sleep(this.animationDelay / 10);
+          if (dist < this.bestDistance) {
+            this.bestDistance = dist;
+            this.bestPath = path;
+          }
+        }
+        this.message.textContent = `Best TSP path: ${this.bestPath.join(" → ")} (Distance: ${this.bestDistance})`;
+        this.highlightPath(this.bestPath, varColor("--warning"));
+        this.isAnimating = false;
+      }
+      
+      permute(arr) {
+        if (arr.length === 0) return [[]];
+        let result = [];
+        for (let i = 0; i < arr.length; i++) {
+          let rest = arr.slice(0, i).concat(arr.slice(i+1));
+          let perms = this.permute(rest);
+          perms.forEach(p => result.push([arr[i], ...p]));
+        }
+        return result;
+      }
+      
+      highlightPath(path, color) {
+        this.renderGraph();
+        for (let i = 0; i < path.length - 1; i++) {
+          let from = this.nodes[path[i]], to = this.nodes[path[i+1]];
+          let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", from.x);
+          line.setAttribute("y1", from.y);
+          line.setAttribute("x2", to.x);
+          line.setAttribute("y2", to.y);
+          line.setAttribute("stroke", color);
+          line.setAttribute("stroke-width", 3);
+          this.svg.appendChild(line);
+        }
+      }
+      
+      sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    }
+    const tspVisualizer = new TSPVisualizer();
+    
+    /* ---------- Global Helper ---------- */
+    function varColor(variable) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+    }
+  </script>
+</body>
+</html>

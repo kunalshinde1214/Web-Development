@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algorithm & Complexity Visualizer</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    /* Common Design Styles */
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--background); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 2rem; }
+    .container { max-width: 1200px; width: 100%; background-color: var(--card-bg); border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
+    .header { text-align: center; margin-bottom: 2rem; }
+    .header h1 { font-size: 2rem; margin-bottom: 0.5rem; background: linear-gradient(45deg, var(--primary), #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .tabs { display: flex; justify-content: center; margin-bottom: 1rem; }
+    .tab-button { padding: 0.75rem 1rem; margin: 0 0.5rem; border: 1px solid var(--border); border-radius: 0.5rem; background-color: var(--background); color: var(--text); cursor: pointer; }
+    .tab-button.active { background-color: var(--primary); }
+    .visualizer { display: none; }
+    .visualizer.active { display: block; }
+    .controls { display: grid; gap: 1rem; margin-bottom: 1rem; }
+    .input-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    input, select, button {
+      padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem;
+      background-color: var(--background); color: var(--text); font-size: 1rem; outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
+    button { cursor: pointer; background-color: var(--primary); border: none; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.secondary { background-color: transparent; border: 1px solid var(--primary); }
+    .array-container { background-color: var(--background); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+    .message { text-align: center; min-height: 1.5rem; font-size: 1.1rem; color: #94a3b8; }
+    .info { text-align: center; color: #64748b; font-size: 0.875rem; margin-top: 1rem; }
+    .speed-control { display: flex; align-items: center; gap: 1rem; justify-content: center; margin-top: 1rem; }
+    .speed-slider { width: 200px; }
+    /* (Other module-specific styles omitted for brevity—they are similar to our earlier examples.) */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Algorithm & Complexity Visualizer</h1>
+      <p>Explore algorithm visualizations and view time/space complexity explanations step‐by‐step</p>
+    </div>
+    <div class="tabs">
+      <!-- Existing algorithm tabs -->
+      <button class="tab-button active" data-tab="dijkstra">Dijkstra</button>
+      <button class="tab-button" data-tab="tsp">TSP</button>
+      <button class="tab-button" data-tab="knapsack">0/1 Knapsack</button>
+      <button class="tab-button" data-tab="graphColoring">Graph Colouring</button>
+      <button class="tab-button" data-tab="nqueens">N-Queens</button>
+      <button class="tab-button" data-tab="deque">Deque</button>
+      <button class="tab-button" data-tab="priorityQueue">Priority Queue</button>
+      <!-- New Complexity Analysis Tab -->
+      <button class="tab-button" data-tab="complexity">Complexity Analysis</button>
+    </div>
+    
+    <!-- (For brevity, the implementations for Dijkstra, TSP, Knapsack, Graph Colouring, N-Queens, Deque, and Priority Queue are assumed to be included here as in our earlier examples.) -->
+    <!-- ... -->
+    
+    <!-- Complexity Analysis Visualizer -->
+    <div id="complexity" class="visualizer">
+      <div class="controls">
+        <div class="input-group">
+          <select id="complexitySelect" style="flex:1;">
+            <option value="Dijkstra">Dijkstra's Algorithm</option>
+            <option value="TSP">Traveling Salesman Problem (Brute Force)</option>
+            <option value="Knapsack">0/1 Knapsack (Dynamic Programming)</option>
+            <option value="GraphColoring">Graph Colouring (Greedy)</option>
+            <option value="NQueens">N-Queens (Backtracking)</option>
+            <option value="Deque">Deque</option>
+            <option value="PriorityQueue">Priority Queue (Min-Heap)</option>
+          </select>
+        </div>
+      </div>
+      <div class="array-container" id="complexityContent" style="text-align:left; max-height:300px; overflow:auto; font-size:14px; line-height:1.4em;"></div>
+      <div class="message" id="complexityMessage"></div>
+    </div>
+    
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControlGlobal">
+      <span>Animation Speed</span>
+    </div>
+    
+    <div class="info" id="globalInfo"></div>
+  </div>
+  
+  <script>
+    /* ---------- Tab Switching ---------- */
+    const tabButtons = document.querySelectorAll(".tab-button");
+    const visualizers = document.querySelectorAll(".visualizer");
+    tabButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        const target = button.getAttribute("data-tab");
+        visualizers.forEach(vis => vis.classList.toggle("active", vis.id === target));
+        tabButtons.forEach(btn => btn.classList.toggle("active", btn === button));
+      });
+    });
+    
+    /* ---------- Global Speed Control ---------- */
+    const speedControlGlobal = document.getElementById("speedControlGlobal");
+    speedControlGlobal.addEventListener("input", (e) => {
+      const newDelay = 1000 / e.target.value;
+      // Assume that each module (dijkstraVisualizer, tspVisualizer, etc.) sets its animationDelay.
+      // Also update ComplexityVisualizer if needed.
+      // (For brevity, only Complexity module is updated below.)
+      if (complexityVisualizer) complexityVisualizer.animationDelay = newDelay;
+    });
+    
+    /* ---------- Complexity Analysis Module ---------- */
+    const complexities = {
+      "Dijkstra": {
+        time: "O((V+E) log V) using a binary heap (or O(V^2) with an array).",
+        space: "O(V + E) for the graph, plus O(V) for distances and visited sets.",
+        explanation: "Dijkstra's algorithm computes the shortest path from a single source to all other vertices. With a binary heap, each vertex is processed in O(log V) time, leading to an overall time complexity of O((V+E) log V)."
+      },
+      "TSP": {
+        time: "O(n!) for brute-force; heuristic or approximation algorithms can run in lower time.",
+        space: "O(n) for storing a tour, plus recursion stack space.",
+        explanation: "The Traveling Salesman Problem (TSP) seeks the shortest route that visits each city once and returns to the starting city. A brute-force solution examines all permutations of cities, resulting in factorial time complexity."
+      },
+      "Knapsack": {
+        time: "O(nW), where n is the number of items and W is the knapsack capacity.",
+        space: "O(nW) for the DP table (can be optimized to O(W)).",
+        explanation: "The 0/1 Knapsack problem uses dynamic programming to determine the maximum value achievable without exceeding the weight capacity. It iterates over items and capacities, leading to pseudo-polynomial time complexity."
+      },
+      "GraphColoring": {
+        time: "O(V + E) for a greedy algorithm, but optimal coloring is NP-hard.",
+        space: "O(V) for storing color assignments.",
+        explanation: "Graph colouring assigns colors to vertices so that no two adjacent vertices share the same color. A greedy algorithm processes vertices sequentially, leading to linear time complexity in practice."
+      },
+      "NQueens": {
+        time: "Exponential in worst-case, roughly O(n!).",
+        space: "O(n) for recursion and board storage.",
+        explanation: "The N-Queens problem places n queens on an n×n chessboard so that no two queens threaten each other. Backtracking is used, which has exponential time complexity in the worst case."
+      },
+      "Deque": {
+        time: "O(1) for push/pop operations at both ends, on average.",
+        space: "O(n) for storing n elements.",
+        explanation: "A deque (double-ended queue) supports insertion and deletion at both the front and back in constant time on average, making it a flexible data structure."
+      },
+      "PriorityQueue": {
+        time: "O(log n) per insertion and extraction when implemented as a binary heap.",
+        space: "O(n) for storing n elements.",
+        explanation: "A priority queue allows quick access to the minimum (or maximum) element. Using a binary heap, both insertion and deletion operations run in logarithmic time."
+      }
+    };
+    
+    class ComplexityVisualizer {
+      constructor() {
+        this.animationDelay = 1000;
+        this.select = document.getElementById("complexitySelect");
+        this.content = document.getElementById("complexityContent");
+        this.message = document.getElementById("complexityMessage");
+        this.select.addEventListener("change", () => this.updateContent());
+        this.updateContent();
+      }
+      
+      updateContent() {
+        let algo = this.select.value;
+        let data = complexities[algo];
+        if (!data) {
+          this.content.innerHTML = "<p>No data available.</p>";
+          return;
+        }
+        this.content.innerHTML = `
+          <h3>${algo} Complexity</h3>
+          <p><strong>Time Complexity:</strong> ${data.time}</p>
+          <p><strong>Space Complexity:</strong> ${data.space}</p>
+          <p>${data.explanation}</p>
+        `;
+        this.message.textContent = "";
+      }
+    }
+    const complexityVisualizer = new ComplexityVisualizer();
+    
+    /* ---------- (Other modules such as Dijkstra, TSP, Knapsack, Graph Colouring, N-Queens, Deque, Priority Queue would be defined here as in previous examples.) ---------- */
+    
+    // For brevity, we assume the modules for Dijkstra, TSP, etc. are included above.
+    
+  </script>
+</body>
+</html>

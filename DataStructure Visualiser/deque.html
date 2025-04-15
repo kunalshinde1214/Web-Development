@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deque & Priority Queue Visualizer</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    /* Common Design */
+    :root {
+      --primary: #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--background); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 2rem; }
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .header { text-align: center; margin-bottom: 2rem; }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--primary), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .tabs { display: flex; justify-content: center; margin-bottom: 1rem; }
+    .tab-button {
+      padding: 0.75rem 1rem; margin: 0 0.5rem; border: 1px solid var(--border);
+      border-radius: 0.5rem; background-color: var(--background); color: var(--text); cursor: pointer;
+    }
+    .tab-button.active { background-color: var(--primary); }
+    .visualizer { display: none; }
+    .visualizer.active { display: block; }
+    .controls { display: grid; gap: 1rem; margin-bottom: 1rem; }
+    .input-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    input, select, button {
+      padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem;
+      background-color: var(--background); color: var(--text); font-size: 1rem; outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
+    button { cursor: pointer; background-color: var(--primary); border: none; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.secondary { background-color: transparent; border: 1px solid var(--primary); }
+    .array-container { background-color: var(--background); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+    .message { text-align: center; min-height: 1.5rem; font-size: 1.1rem; color: #94a3b8; }
+    .info { text-align: center; color: #64748b; font-size: 0.875rem; margin-top: 1rem; }
+    .speed-control { display: flex; align-items: center; gap: 1rem; justify-content: center; margin-top: 1rem; }
+    .speed-slider { width: 200px; }
+    /* Deque Visualization: horizontal row of boxes */
+    .deque-visualization { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: nowrap; overflow-x: auto; }
+    .deque-element {
+      width: 60px; height: 60px; border: 2px solid var(--border); border-radius: 0.5rem;
+      display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .deque-element.fresh { background-color: var(--success); color: var(--background); transform: translateY(-4px); border-color: var(--success); }
+    .deque-element.highlight { background-color: var(--warning); color: var(--background); transform: translateY(-4px); border-color: var(--warning); }
+    /* Priority Queue: we'll use a binary heap visualized as a tree */
+    .heap-tree { border: 2px dashed var(--border); border-radius: 0.5rem; min-height: 300px; position: relative; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Deque & Priority Queue Visualizer</h1>
+      <p>Step-by-step operations on a Deque and a Priority Queue</p>
+    </div>
+    <div class="tabs">
+      <button class="tab-button active" data-tab="deque">Deque</button>
+      <button class="tab-button" data-tab="priorityQueue">Priority Queue</button>
+    </div>
+    <!-- Deque Visualizer -->
+    <div id="deque" class="visualizer active">
+      <div class="controls">
+        <div class="input-group">
+          <input type="text" id="dequeValueInput" placeholder="Enter value" style="flex:1;">
+          <button id="pushFrontBtn"><i class="fas fa-arrow-left"></i> Push Front</button>
+          <button id="pushBackBtn"><i class="fas fa-arrow-right"></i> Push Back</button>
+        </div>
+        <div class="input-group">
+          <button id="popFrontBtn"><i class="fas fa-minus-circle"></i> Pop Front</button>
+          <button id="popBackBtn"><i class="fas fa-minus-circle"></i> Pop Back</button>
+        </div>
+        <div class="input-group">
+          <button id="peekFrontBtn"><i class="fas fa-eye"></i> Peek Front</button>
+          <button id="peekBackBtn"><i class="fas fa-eye"></i> Peek Back</button>
+          <button id="clearDequeBtn" class="secondary"><i class="fas fa-redo"></i> Clear Deque</button>
+        </div>
+      </div>
+      <div class="array-container">
+        <div class="deque-visualization" id="dequeVisualization"></div>
+        <div class="message" id="dequeMessage"></div>
+      </div>
+    </div>
+    <!-- Priority Queue Visualizer -->
+    <div id="priorityQueue" class="visualizer">
+      <div class="controls">
+        <div class="input-group">
+          <input type="text" id="pqValueInput" placeholder="Enter value" style="flex:1;">
+          <button id="pqInsertBtn"><i class="fas fa-plus"></i> Insert</button>
+        </div>
+        <div class="input-group">
+          <button id="pqExtractBtn"><i class="fas fa-trash"></i> Extract Min</button>
+          <button id="pqPeekBtn"><i class="fas fa-eye"></i> Peek Min</button>
+          <button id="clearPQBtn" class="secondary"><i class="fas fa-redo"></i> Clear PQ</button>
+        </div>
+      </div>
+      <div class="array-container">
+        <div class="heap-tree" id="pqVisualization">
+          <svg id="pqSVG" viewBox="0 0 500 300"></svg>
+        </div>
+        <div class="message" id="pqMessage"></div>
+      </div>
+    </div>
+    <div class="speed-control">
+      <i class="fas fa-tachometer-alt"></i>
+      <input type="range" min="1" max="5" value="3" class="speed-slider" id="speedControlGlobal">
+      <span>Animation Speed</span>
+    </div>
+    <div class="info" id="globalInfo"></div>
+  </div>
+  
+  <script>
+    /* ---------- Global Helper ---------- */
+    function varColor(variable) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+    }
+    
+    /* ---------- Tab Switching ---------- */
+    const tabButtons = document.querySelectorAll(".tab-button");
+    const visualizers = document.querySelectorAll(".visualizer");
+    tabButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        const target = button.getAttribute("data-tab");
+        visualizers.forEach(vis => vis.classList.toggle("active", vis.id === target));
+        tabButtons.forEach(btn => btn.classList.toggle("active", btn === button));
+      });
+    });
+    
+    /* ---------- Global Speed Control ---------- */
+    const speedControlGlobal = document.getElementById("speedControlGlobal");
+    speedControlGlobal.addEventListener("input", (e) => {
+      const newDelay = 1000 / e.target.value;
+      if (dequeVisualizer) dequeVisualizer.animationDelay = newDelay;
+      if (pqVisualizer) pqVisualizer.animationDelay = newDelay;
+    });
+    
+    /* ---------- Deque Visualizer ---------- */
+    class DequeVisualizer {
+      constructor() {
+        this.deque = []; // Use array to simulate deque
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.valueInput = document.getElementById("dequeValueInput");
+        this.pushFrontBtn = document.getElementById("pushFrontBtn");
+        this.pushBackBtn = document.getElementById("pushBackBtn");
+        this.popFrontBtn = document.getElementById("popFrontBtn");
+        this.popBackBtn = document.getElementById("popBackBtn");
+        this.peekFrontBtn = document.getElementById("peekFrontBtn");
+        this.peekBackBtn = document.getElementById("peekBackBtn");
+        this.clearBtn = document.getElementById("clearDequeBtn");
+        this.visualization = document.getElementById("dequeVisualization");
+        this.message = document.getElementById("dequeMessage");
+        
+        this.pushFrontBtn.addEventListener("click", () => this.pushFront());
+        this.pushBackBtn.addEventListener("click", () => this.pushBack());
+        this.popFrontBtn.addEventListener("click", () => this.popFront());
+        this.popBackBtn.addEventListener("click", () => this.popBack());
+        this.peekFrontBtn.addEventListener("click", () => this.peekFront());
+        this.peekBackBtn.addEventListener("click", () => this.peekBack());
+        this.clearBtn.addEventListener("click", () => this.clearDeque());
+        this.updateInfo();
+        this.renderDeque();
+      }
+      
+      updateInfo() {
+        document.getElementById("globalInfo").textContent = `Deque | Size: ${this.deque.length}`;
+      }
+      
+      renderDeque(highlights = {}) {
+        // highlights: object { front: boolean, back: boolean }
+        this.visualization.innerHTML = "";
+        this.deque.forEach((elem, idx) => {
+          const div = document.createElement("div");
+          div.className = "deque-element";
+          div.textContent = elem;
+          if (idx === 0 && highlights.front) div.classList.add("highlight");
+          if (idx === this.deque.length - 1 && highlights.back) div.classList.add("highlight");
+          this.visualization.appendChild(div);
+        });
+      }
+      
+      async pushFront() {
+        let val = this.valueInput.value.trim();
+        if (val === "") {
+          this.message.textContent = "Enter a value to push.";
+          return;
+        }
+        this.deque.unshift(val);
+        this.renderDeque({ front: true });
+        this.message.textContent = `Pushed "${val}" to front.`;
+        await this.sleep(this.animationDelay);
+        this.renderDeque();
+        this.valueInput.value = "";
+        this.updateInfo();
+      }
+      
+      async pushBack() {
+        let val = this.valueInput.value.trim();
+        if (val === "") {
+          this.message.textContent = "Enter a value to push.";
+          return;
+        }
+        this.deque.push(val);
+        this.renderDeque({ back: true });
+        this.message.textContent = `Pushed "${val}" to back.`;
+        await this.sleep(this.animationDelay);
+        this.renderDeque();
+        this.valueInput.value = "";
+        this.updateInfo();
+      }
+      
+      async popFront() {
+        if (this.deque.length === 0) {
+          this.message.textContent = "Deque is empty.";
+          return;
+        }
+        let val = this.deque[0];
+        this.renderDeque({ front: true });
+        this.message.textContent = `Popping front "${val}"...`;
+        await this.sleep(this.animationDelay);
+        this.deque.shift();
+        this.renderDeque();
+        this.message.textContent = `Popped front "${val}".`;
+        this.updateInfo();
+      }
+      
+      async popBack() {
+        if (this.deque.length === 0) {
+          this.message.textContent = "Deque is empty.";
+          return;
+        }
+        let val = this.deque[this.deque.length - 1];
+        this.renderDeque({ back: true });
+        this.message.textContent = `Popping back "${val}"...`;
+        await this.sleep(this.animationDelay);
+        this.deque.pop();
+        this.renderDeque();
+        this.message.textContent = `Popped back "${val}".`;
+        this.updateInfo();
+      }
+      
+      async peekFront() {
+        if (this.deque.length === 0) {
+          this.message.textContent = "Deque is empty.";
+          return;
+        }
+        let val = this.deque[0];
+        this.renderDeque({ front: true });
+        this.message.textContent = `Front element: "${val}".`;
+        await this.sleep(this.animationDelay);
+        this.renderDeque();
+      }
+      
+      async peekBack() {
+        if (this.deque.length === 0) {
+          this.message.textContent = "Deque is empty.";
+          return;
+        }
+        let val = this.deque[this.deque.length - 1];
+        this.renderDeque({ back: true });
+        this.message.textContent = `Back element: "${val}".`;
+        await this.sleep(this.animationDelay);
+        this.renderDeque();
+      }
+      
+      async clearDeque() {
+        this.deque = [];
+        this.renderDeque();
+        this.message.textContent = "Deque cleared.";
+        this.updateInfo();
+      }
+      
+      sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    }
+    const dequeVisualizer = new DequeVisualizer();
+    
+    /* ---------- Priority Queue Visualizer (Min-Heap) ---------- */
+    class PriorityQueueVisualizer {
+      constructor() {
+        this.heap = [];
+        this.isAnimating = false;
+        this.animationDelay = 1000;
+        this.valueInput = document.getElementById("pqValueInput");
+        this.insertBtn = document.getElementById("pqInsertBtn");
+        this.extractBtn = document.getElementById("pqExtractBtn");
+        this.peekBtn = document.getElementById("pqPeekBtn");
+        this.clearBtn = document.getElementById("clearPQBtn");
+        this.svg = document.getElementById("pqSVG");
+        this.message = document.getElementById("pqMessage");
+        this.insertBtn.addEventListener("click", () => this.insert());
+        this.extractBtn.addEventListener("click", () => this.extractMin());
+        this.peekBtn.addEventListener("click", () => this.peekMin());
+        this.clearBtn.addEventListener("click", () => this.clearPQ());
+        this.updateInfo();
+        this.renderHeap();
+      }
+      
+      updateInfo() {
+        document.getElementById("globalInfo").textContent = `Priority Queue | Size: ${this.heap.length}`;
+      }
+      
+      renderHeap() {
+        while(this.svg.firstChild) this.svg.removeChild(this.svg.firstChild);
+        if (this.heap.length === 0) return;
+        let positions = [];
+        let currentX = 0;
+        const assignPos = (i, depth) => {
+          if (i >= this.heap.length) return;
+          if (2*i+1 >= this.heap.length && 2*i+2 >= this.heap.length) {
+            positions[i] = currentX * 40 + 40;
+            currentX++;
+          } else {
+            assignPos(2*i+1, depth+1);
+            assignPos(2*i+2, depth+1);
+            let left = positions[2*i+1] || 0;
+            let right = positions[2*i+2] || 0;
+            positions[i] = (left + right) / 2;
+          }
+        };
+        assignPos(0, 0);
+        const drawHeap = (i, depth) => {
+          if (i >= this.heap.length) return;
+          let x = positions[i], y = depth * 50 + 40;
+          let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", x);
+          circle.setAttribute("cy", y);
+          circle.setAttribute("r", 15);
+          circle.setAttribute("stroke", varColor("--border"));
+          circle.setAttribute("stroke-width", 2);
+          circle.setAttribute("fill", varColor("--primary"));
+          this.svg.appendChild(circle);
+          let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", x);
+          text.setAttribute("y", y+5);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "12px");
+          text.setAttribute("fill", varColor("--text"));
+          text.textContent = this.heap[i];
+          this.svg.appendChild(text);
+          let left = 2*i+1, right = 2*i+2;
+          if (left < this.heap.length) {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", x);
+            line.setAttribute("y1", y);
+            line.setAttribute("x2", positions[left]);
+            line.setAttribute("y2", (depth+1)*50+40);
+            line.setAttribute("stroke", varColor("--primary"));
+            line.setAttribute("stroke-width", 2);
+            this.svg.appendChild(line);
+            drawHeap(left, depth+1);
+          }
+          if (right < this.heap.length) {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", x);
+            line.setAttribute("y1", y);
+            line.setAttribute("x2", positions[right]);
+            line.setAttribute("y2", (depth+1)*50+40);
+            line.setAttribute("stroke", varColor("--primary"));
+            line.setAttribute("stroke-width", 2);
+            this.svg.appendChild(line);
+            drawHeap(right, depth+1);
+          }
+        };
+        drawHeap(0,0);
+      }
+      
+      insertHeapValue(val) {
+        this.heap.push(val);
+        let i = this.heap.length - 1;
+        while (i > 0) {
+          let parent = Math.floor((i - 1) / 2);
+          if (this.heap[i] < this.heap[parent]) {
+            [this.heap[i], this.heap[parent]] = [this.heap[parent], this.heap[i]];
+            i = parent;
+          } else break;
+        }
+      }
+      
+      async insert() {
+        if (this.isAnimating) return;
+        let val = parseInt(this.valueInput.value);
+        if (isNaN(val)) {
+          this.message.textContent = "Enter a numeric value.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.heap.push(val);
+        let i = this.heap.length - 1;
+        this.renderHeap();
+        this.message.textContent = `Inserting ${val}...`;
+        await this.sleep(this.animationDelay);
+        while (i > 0) {
+          let parent = Math.floor((i - 1) / 2);
+          if (this.heap[i] < this.heap[parent]) {
+            [this.heap[i], this.heap[parent]] = [this.heap[parent], this.heap[i]];
+            i = parent;
+            this.renderHeap();
+            await this.sleep(this.animationDelay);
+          } else break;
+        }
+        this.valueInput.value = "";
+        this.renderHeap();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.message.textContent = `Inserted ${val}.`;
+        this.updateInfo();
+      }
+      
+      async extractMin() {
+        if (this.isAnimating) return;
+        if (this.heap.length === 0) {
+          this.message.textContent = "Priority queue is empty.";
+          return;
+        }
+        this.setControlsEnabled(false);
+        this.isAnimating = true;
+        this.message.textContent = "Extracting minimum...";
+        this.heap[0] = this.heap[this.heap.length - 1];
+        this.heap.pop();
+        this.renderHeap();
+        await this.sleep(this.animationDelay);
+        let i = 0;
+        while (true) {
+          let left = 2*i+1, right = 2*i+2, smallest = i;
+          if (left < this.heap.length && this.heap[left] < this.heap[smallest]) smallest = left;
+          if (right < this.heap.length && this.heap[right] < this.heap[smallest]) smallest = right;
+          if (smallest !== i) {
+            [this.heap[i], this.heap[smallest]] = [this.heap[smallest], this.heap[i]];
+            i = smallest;
+            this.renderHeap();
+            await this.sleep(this.animationDelay);
+          } else break;
+        }
+        this.message.textContent = "Extracted minimum element.";
+        this.renderHeap();
+        this.isAnimating = false;
+        this.setControlsEnabled(true);
+        this.updateInfo();
+      }
+      
+      peekMin() {
+        if (this.heap.length === 0) {
+          this.message.textContent = "Priority queue is empty.";
+          return;
+        }
+        this.message.textContent = `Minimum element: ${this.heap[0]}`;
+      }
+      
+      async clearPQ() {
+        this.heap = [];
+        this.renderHeap();
+        this.message.textContent = "Priority queue cleared.";
+        this.updateInfo();
+      }
+      
+      setControlsEnabled(enabled) {
+        this.valueInput.disabled = !enabled;
+        this.insertBtn.disabled = !enabled;
+        this.heapDeleteBtn.disabled = !enabled;
+        this.peekBtn.disabled = !enabled;
+        this.clearBtn.disabled = !enabled;
+      }
+      
+      sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    }
+    const pqVisualizer = new PriorityQueueVisualizer();
+    
+    /* ---------- Global Helper for Priority Queue ---------- */
+    // For PQ, use the same varColor() defined above.
+  </script>
+</body>
+</html>
