@@ -1,0 +1,2105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drinkos Solution Private Limited - Water Purification Experts</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+    <style>
+        /* Base Styles */
+        :root {
+            --primary-color: #0a1172;
+            --secondary-color: #1e3799;
+            --accent-color: #4a69bd;
+            --light-color: #f5f6fa;
+            --dark-color: #2c3e50;
+            --text-color: #333;
+            --white: #fff;
+            --gray: #f4f4f4;
+            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            overflow-x: hidden;
+            background-color: var(--white);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-weight: 300;
+            font-size: 1.05rem;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: var(--transition);
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 14px 30px;
+            border-radius: 50px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            border: 2px solid var(--primary-color);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 70px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .section-header p {
+            max-width: 700px;
+            margin: 0 auto;
+            color: #666;
+        }
+
+        .underline {
+            height: 4px;
+            width: 70px;
+            background-color: var(--accent-color);
+            margin: 0 auto;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .underline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 4px;
+            background-color: var(--primary-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { width: 15px; }
+            50% { width: 40px; }
+            100% { width: 15px; }
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: transparent;
+            z-index: 1000;
+            transition: var(--transition);
+            padding: 20px 0;
+        }
+
+        header.scrolled {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            max-width: 180px;
+            transition: var(--transition);
+        }
+
+        header.scrolled .logo {
+            max-width: 160px;
+        }
+
+        .nav-links {
+            display: flex;
+        }
+
+        .nav-links li {
+            margin-left: 35px;
+        }
+
+        .nav-links a {
+            color: var(--primary-color);
+            font-weight: 500;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after, .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: var(--primary-color);
+            margin: 5px 0;
+            transition: var(--transition);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            min-height: 700px;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%230a1172" fill-opacity="0.05" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,250.7C960,235,1056,181,1152,165.3C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: bottom;
+            opacity: 1;
+            z-index: 0;
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hero-content {
+            flex: 1;
+            padding-right: 50px;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: var(--dark-color);
+        }
+
+        .hero-image {
+            flex: 1;
+            position: relative;
+        }
+
+        .hero-image img {
+            max-width: 80%;
+            border-radius: 10px;
+            box-shadow: 0 20px 20px rgba(0, 0, 0, 0.15);
+            transition: var(--transition);
+        }
+
+        .hero-image::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--primary-color);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.3;
+            animation: borderPulse 3s infinite;
+        }
+
+        @keyframes borderPulse {
+            0% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.05); opacity: 0.1; }
+            100% { transform: scale(1); opacity: 0.3; }
+        }
+
+        .hero-image img:hover {
+            transform: scale(1.02) translateY(-10px);
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-badges {
+            display: flex;
+            margin-top: 30px;
+            gap: 20px;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px 15px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        .badge:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .badge span {
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        /* About Section */
+        .about {
+            background-color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background-color: rgba(10, 17, 114, 0.05);
+            border-radius: 50%;
+            transform: translate(150px, -150px);
+            z-index: 0;
+        }
+
+        .about::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200px;
+            height: 200px;
+            background-color: rgba(10, 17, 114, 0.05);
+            border-radius: 50%;
+            transform: translate(-100px, 100px);
+            z-index: 0;
+        }
+
+        .about-content {
+            display: flex;
+            align-items: center;
+            gap: 70px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-image {
+            flex: 1;
+            position: relative;
+        }
+
+        .about-image img {
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+        }
+
+        .about-image::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: -20px;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .about-image img:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .about-text {
+            flex: 1;
+        }
+
+        .about-text h3 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-top: 20px;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .about-text h3::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--primary-color);
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 25px;
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            flex: 1;
+            min-width: 150px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 0;
+            background-color: var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .stat-item:hover::before {
+            height: 100%;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-item h4 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-item p {
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+
+        /* Products Section */
+        .products {
+            background-color: var(--light-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .products::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%230a1172" fill-opacity="0.03" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,224C672,213,768,171,864,149.3C960,128,1056,128,1152,149.3C1248,171,1344,213,1392,234.7L1440,256L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>');
+            background-size: cover;
+            background-position: top;
+            opacity: 1;
+            z-index: 0;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .product-card {
+            background-color: var(--white);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-image {
+            height: 250px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            position: relative;
+        }
+
+        .product-image::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to top, rgba(0,0,0,0.05), transparent);
+            z-index: 1;
+        }
+
+        .product-image img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+            transition: var(--transition);
+            transform: scale(0.9);
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1);
+        }
+
+        .product-info {
+            padding: 30px;
+            position: relative;
+        }
+
+        .product-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 30px;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .product-info h3 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .features {
+            margin: 25px 0;
+        }
+
+        .features li {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .features li i {
+            color: var(--primary-color);
+            margin-right: 10px;
+            margin-top: 5px;
+            font-size: 0.8rem;
+        }
+
+        /* How It Works Section */
+        .how-it-works {
+            background-color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .how-it-works::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background-color: rgba(10, 17, 114, 0.05);
+            border-radius: 50%;
+            transform: translate(150px, 150px);
+            z-index: 0;
+        }
+
+        .process-container {
+            display: flex;
+            align-items: center;
+            gap: 70px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .process-image {
+            flex: 1;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .process-image img {
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .process-image:hover img {
+            transform: scale(1.05);
+        }
+
+        .steps-container {
+            flex: 1;
+        }
+
+        .step {
+            display: flex;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 60px;
+            left: 25px;
+            width: 2px;
+            height: calc(100% - 20px);
+            background-color: var(--primary-color);
+            opacity: 0.2;
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-right: 25px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 5px 15px rgba(10, 17, 114, 0.2);
+            transition: var(--transition);
+        }
+
+        .step:hover .step-number {
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(10, 17, 114, 0.3);
+        }
+
+        .step-content {
+            background-color: var(--white);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            flex: 1;
+        }
+
+        .step:hover .step-content {
+            transform: translateX(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-content h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .step-content p {
+            margin-bottom: 0;
+        }
+
+        /* Team Section */
+        .team {
+            background-color: var(--light-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%230a1172" fill-opacity="0.03" d="M0,160L48,170.7C96,181,192,203,288,202.7C384,203,480,181,576,154.7C672,128,768,96,864,106.7C960,117,1056,171,1152,197.3C1248,224,1344,224,1392,224L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: bottom;
+            opacity: 1;
+            z-index: 0;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .team-member {
+            background-color: var(--white);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .team-member:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .member-image {
+            height: 250px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .member-image::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
+            z-index: 1;
+        }
+
+        .member-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: content;
+            transition: var(--transition);
+        }
+
+        .team-member:hover .member-image img {
+            transform: scale(1.05);
+        }
+
+        .team-member-info {
+            padding: 25px;
+            position: relative;
+        }
+
+        .team-member-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .team-member h3 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .team-member p {
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .social-links a {
+            width: 35px;
+            height: 35px;
+            background-color: var(--light-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background-color: var(--primary-color);
+            color: var(--white);
+            transform: translateY(-3px);
+        }
+
+        /* Impact Section */
+        .impact {
+            background-color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .impact::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%230a1172" fill-opacity="0.03" d="M0,288L48,272C96,256,192,224,288,197.3C384,171,480,149,576,165.3C672,181,768,235,864,250.7C960,267,1056,245,1152,224C1248,203,1344,181,1392,170.7L1440,160L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>');
+            background-size: cover;
+            background-position: top;
+            opacity: 1;
+            z-index: 0;
+        }
+
+        .impact-content {
+            display: flex;
+            align-items: center;
+            gap: 70px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .impact-text {
+            flex: 1;
+        }
+
+        .impact-image {
+            flex: 1;
+            position: relative;
+        }
+
+        .impact-image img {
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+        }
+
+        .impact-image::before {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--primary-color);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .impact-image img:hover {
+            transform: scale(1.02) translateY(-10px);
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Contact Section */
+        .contact {
+            background-color: var(--light-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background-color: rgba(10, 17, 114, 0.05);
+            border-radius: 50%;
+            transform: translate(150px, -150px);
+            z-index: 0;
+        }
+
+        .contact-content {
+            display: flex;
+            gap: 50px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .contact-info, .contact-form {
+            flex: 1;
+        }
+
+        .contact-info {
+            background-color: var(--white);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .contact-info:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .contact-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--primary-color);
+        }
+
+        .contact-info h3 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+        }
+
+        .info-item {
+            display: flex;
+            margin-bottom: 25px;
+        }
+
+        .info-item i {
+            width: 50px;
+            height: 50px;
+            background-color: var(--light-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .info-item:hover i {
+            background-color: var(--primary-color);
+            color: var(--white);
+            transform: scale(1.1);
+        }
+
+        .info-item h4 {
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+
+        .contact-form {
+            background-color: var(--white);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        .contact-form:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: var(--light-color);
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(10, 17, 114, 0.1);
+            background-color: var(--white);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark-color);
+            color: var(--white);
+            padding: 80px 0 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .footer-logo {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .footer-logo img {
+            max-width: 180px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-links h3, .footer-newsletter h3 {
+            color: var(--white);
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .footer-links h3::after, .footer-newsletter h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--accent-color);
+        }
+
+        .footer-links ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links ul li a {
+            color: #ccc;
+            transition: var(--transition);
+            display: inline-block;
+        }
+
+        .footer-links ul li a:hover {
+            color: var(--white);
+            transform: translateX(5px);
+        }
+
+        .footer-newsletter {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .footer-newsletter form {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .footer-newsletter input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px 0 0 8px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .footer-newsletter button {
+            border-radius: 0 8px 8px 0;
+            padding: 0 25px;
+            border: none;
+            background-color: var(--primary-color);
+        }
+
+        .footer-newsletter button:hover {
+            background-color: var(--accent-color);
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-bottom-links a {
+            color: #ccc;
+            margin-left: 20px;
+            transition: var(--transition);
+        }
+
+        .footer-bottom-links a:hover {
+            color: var(--white);
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-to-top.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 1200px) {
+            .hero-content h1 {
+                font-size: 3rem;
+            }
+        }
+
+        @media screen and (max-width: 992px) {
+            .hero .container, .about-content, .process-container, .impact-content, .contact-content {
+                flex-direction: column;
+            }
+            
+            .hero-content, .about-text, .steps-container, .impact-text, .contact-info {
+                padding-right: 0;
+                margin-bottom: 50px;
+            }
+            
+            .hero-image, .about-image, .process-image, .impact-image {
+                margin-top: 30px;
+            }
+            
+            .stats-container {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+            
+            .stat-item {
+                flex: 1;
+                min-width: 150px;
+            }
+
+            .hero {
+                height: auto;
+                padding: 150px 0 80px;
+            }
+        }
+            .upcoming-products-section {
+            padding: 40px;
+            background-color: #f9f9f9;
+            text-align: center;
+            }
+
+            .product-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap; /* Optional: allows responsiveness */
+            margin-top: 20px;
+            }
+
+            .product-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 5000px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .product-card img {
+            width: 100%;
+            border-radius: 8px;
+            }
+
+            .product-card h3 {
+            margin: 15px 0 5px;
+            font-size: 1.2em;
+            }
+
+            .product-card p {
+            color: #888;
+            }
+
+        @media screen and (max-width: 768px) {
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                left: -100%;
+                width: 80%;
+                height: calc(100vh - 80px);
+                background-color: var(--white);
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                transition: var(--transition);
+                z-index: 999;
+            }
+            
+            .nav-links.active {
+                left: 0;
+            }
+            
+            .nav-links li {
+                margin: 15px 0;
+            }
+            
+            .hamburger {
+                display: block;
+            }
+            
+            .hamburger.active span:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 5px);
+            }
+            
+            .hamburger.active span:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .hamburger.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(7px, -6px);
+            }
+            
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            
+            .section-header h2 {
+                font-size: 2rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+
+        @media screen and (max-width: 576px) {
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-newsletter form {
+                flex-direction: column;
+            }
+            
+            .footer-newsletter input, .footer-newsletter button {
+                border-radius: 8px;
+            }
+            
+            .footer-newsletter button {
+                margin-top: 10px;
+                width: 100%;
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .footer-bottom-links {
+                margin-top: 15px;
+            }
+            
+            .footer-bottom-links a {
+                margin: 0 10px;
+            }
+
+            .hero-badges {
+                flex-direction: column;
+            }
+
+            .founders-row, .interns-row {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                column-gap: 80px;   /* Horizontal spacing between items */
+                row-gap: 20px;      /* Vertical spacing between rows */
+                margin-bottom: 40px; /* Space below the container */
+                object-fit: contain;
+
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="logo.png" alt="Drinkos Solutions">
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#home" class="active">Home</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#products">Products</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#team">Our Team</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content" data-aos="fade-right" data-aos-duration="1000">
+                <h1>Innovative Water Purification Solutions</h1>
+                <p>At Drinkos Solution Private Limited, we're committed to providing safe drinking water through cutting-edge purification technology. Our mission is to improve public health and well-being worldwide.</p>
+                <a href="#products" class="btn">Discover Our Products</a>
+                <div class="hero-badges">
+                    <!--<div class="badge">
+                        <i class="fas fa-certificate"></i>
+                        <span>ISO Certified</span>
+                    </div>
+                    <div class="badge">
+                        <i class="fas fa-globe"></i>
+                        <span>Global Reach</span>
+                    </div> -->
+                </div>
+            </div>
+            <div class="hero-image" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="150">
+                <img src="back.jpeg" alt="Clean Water Access">
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="section-header">
+                <h2>About Us</h2>
+                <div class="underline"></div>
+                <p>Learn more about our company's mission, vision, and commitment to providing clean water solutions worldwide.</p>
+            </div>
+            <div class="about-content">
+                <div class="about-image" data-aos="fade-right" data-aos-duration="1000">
+                    <img src="model.jpeg" alt="Charnet Product">
+                </div>
+                <div class="about-text" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                    <h3>Our Mission</h3>
+                    <p>At Drinkos Solution Private Limited, we are committed to providing innovative water purification solutions that ensure safe drinking water for all. Our mission is to improve public health and well-being through accessible and effective water treatment technologies.</p>
+                    
+                    <h3>Our Vision</h3>
+                    <p>We envision a world where clean, safe drinking water is accessible to everyone, regardless of their location or economic status. Through our products and services, we aim to contribute to the global effort of reducing waterborne diseases and improving quality of life.</p>
+                    
+                    <div class="stats-container">
+                        <div class="stat-item" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
+                            <h4>5M+</h4>
+                            <p>Lives will be Impacted</p>
+                        </div>
+                        <div class="stat-item" data-aos="fade-up" data-aos-duration="800" data-aos-delay="300">
+                            <h4>20+</h4>
+                            <p>Countries Served</p>
+                        </div>
+                        <div class="stat-item" data-aos="fade-up" data-aos-duration="800" data-aos-delay="500">
+                            <h4>2</h4>
+                            <p>Years of Experience</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="products">
+        <div class="container">
+            <div class="section-header">
+                <h2>Our Products</h2>
+                <div class="underline"></div>
+                <p>Discover our innovative water purification solutions designed to provide safe drinking water for all.</p>
+            </div>
+            <div class="products-grid">
+                <div class="product-card" data-aos="fade-up" data-aos-duration="1000">
+                    <div class="product-image">
+                        <img src="/img/tablet.jpg" alt="Charnet Water Purification Tablet">
+                    </div>
+                    <div class="product-info">
+                        <h3>Charnet</h3>
+                        <p>Our flagship water purification tablet that effectively eliminates bacteria, viruses, and other harmful microorganisms from water, making it safe for consumption.</p>
+                        <ul class="features">
+                            <li><i class="fas fa-check"></i> Fast-acting formula that works within 30 minutes</li>
+                            <li><i class="fas fa-check"></i> No unpleasant taste or odor after treatment</li>
+                            <li><i class="fas fa-check"></i> Compact and portable for travel and emergency use</li>
+                            <li><i class="fas fa-check"></i> Long shelf life of up to 5 years</li>
+                        </ul>
+                        <a href="#contact" class="btn">Request Information</a>
+                    </div>
+                </div>
+                
+                <div class="product-card" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
+                    <div class="product-image">
+                        <img src="/img/tablet2.png" alt="Charnet Packaging">
+                    </div>
+                    <div class="product-info">
+                        <h3>Charnet Packaging Options</h3>
+                        <p>Available in various packaging options to suit different needs, from individual tablets to bulk packages for organizations and relief efforts.</p>
+                        <ul class="features">
+                            <li><i class="fas fa-check"></i> Individual blister packs for personal use</li>
+                            <li><i class="fas fa-check"></i> Family packs for household water treatment</li>
+                            <li><i class="fas fa-check"></i> Institutional bulk packages for schools and offices</li>
+                            <li><i class="fas fa-check"></i> Emergency relief kits for disaster response</li>
+                        </ul>
+                        <a href="#contact" class="btn">Request Information</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How It Works</h2>
+                <div class="underline"></div>
+                <p>Our water purification technology is simple to use yet highly effective. Learn how Charnet works to make water safe for consumption.</p>
+            </div>
+            <div class="process-container">
+                <img src="process.jpeg" alt="How Charnet Works" class="process-image" data-aos="fade-right" data-aos-duration="1000">
+                
+                <div class="steps-container" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Drop the Tablet</h3>
+                            <p>Drop tablet upto 50 litre of water 
+                            Tablet will began to adsorb contaminants.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Let it Purify</h3>
+                            <p>Allow the Tablet to purify water takes 15-30 mins. </p>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Purification Process </h3>
+                            <p>Harmful metals and contaminants absorded.Safe to Drink</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>Reuse</h3>
+                            <p>Sun dry the Tablet.Bonds between metals and tablet breaks and can be reused,Essential contaminants
+                                preserved and harmful absorded.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Upcoming Products Section -->
+<!-- Upcoming Products Section -->
+        <section class="Upcoming-products-section">
+            <div class="section-header">
+                <h2>Upcoming Products</h2>
+                <div class="underline"></div>
+            </div>
+                <div class="product-row">
+                <div class="product-card">
+                <img src="membrane filter.jpeg" alt="Membrane Filter">
+                <h3>Membrane Filter</h3>
+                <p>Releasing Soon</p>
+            </div>
+            <div class="product-card">
+                <img src="Tap filter.jpeg" alt="Tap filter">
+                <h3>Tap Filter</h3>
+                <p>Releasing Soon</p>
+            </div>
+            <div class="product-card">
+                <img src="pot.jpeg" alt="2 in 1 pot">
+                <h3>2 in 1 pot</h3>
+                <p>Releasing Soon</p>
+            </div>
+            <div class="product-card">
+                <img src="Sachet.jpeg" alt="Sachet">
+                <h3>Sachet</h3>
+                <p>Releasing Soon</p>
+            </div>
+            </div>
+        </section>
+  
+
+
+    <!-- Team Section -->
+    <section id="team" class="team">
+        <div class="container">
+            <div class="section-header">
+                <h2>Our Leadership Team</h2>
+                <div class="underline"></div>
+                <p>Meet the dedicated professionals behind Drinkos Solution who are committed to our mission of providing safe drinking water for all.</p>
+            </div>
+    
+            <!-- Founders Row -->
+            <div class="team-grid founders-row">
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
+                    <div class="member-image">
+                        <img src="kabir.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Kabir Alhat</h3>
+                        <p>Chief Executive Officer & Co-Founder</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">
+                    <div class="member-image">
+                        <img src="shubham.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Shubham Kale</h3>
+                        <p>COO & Co-Founder</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="300">
+                    <div class="member-image">
+                        <img src="pawan.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Pawan Undre</h3>
+                        <p>CMO</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <span> </span><br>
+            <span> </span><br>
+            <div class="team-grid interns-row">
+                <!-- Keep all interns here as-is -->
+                <!-- For example: -->
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+                    <div class="member-image">
+                        <img src="aiman.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Aiman Shaikh</h3>
+                        <p>Intern</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+                    <div class="member-image">
+                        <img src="manasi.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Manasi Sodal</h3>
+                        <p>Intern</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+                    <div class="member-image">
+                        <img src="pranita.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Pranita Kharade</h3>
+                        <p>Intern</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+                    <div class="member-image">
+                        <img src="nishita.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Nishita Kakade</h3>
+                        <p>Intern</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+                    <div class="member-image">
+                        <img src="prapti.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Prapti Malghe</h3>
+                        <p>Intern</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+                    <div class="member-image">
+                        <img src="jaitali.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Jaitali Pawar</h3>
+                        <p>Intern</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+                    <div class="member-image">
+                        <img src="laxmipriya.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Laxmipriya Dhongde</h3>
+                        <p>Intern</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-member" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+                    <div class="member-image">
+                        <img src="shravani.jpg?height=300&width=300" alt="Team Member">
+                    </div>
+                    <div class="team-member-info">
+                        <h3>Shravani Rekhe</h3>
+                        <p>Intern</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>  
+
+    <!-- Impact Section -->
+    <section class="impact">
+        <div class="container">
+            <div class="section-header">
+                <h2>Our Global Impact</h2>
+                <div class="underline"></div>
+                <p>Discover how our water purification solutions are making a difference in communities around the world.</p>
+            </div>
+            <div class="impact-content">
+                <div class="impact-text" data-aos="fade-right" data-aos-duration="1000">
+                    <p>Access to clean water is a fundamental human right, yet millions around the world still lack this basic necessity. At Drinkos Solution, we're committed to changing this reality through our innovative water purification solutions.</p>
+                    <p>Our products have helped communities in over 20 countries, providing safe drinking water to those who need it most. From rural villages to disaster-stricken areas, our solutions have made a significant difference in people's lives.</p>
+                    <p>By partnering with NGOs, government agencies, and international organizations, we've been able to extend our reach and impact more lives than ever before.</p>
+                    <a href="#contact" class="btn" data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">Join Our Mission</a>
+                </div>
+                <div class="impact-image" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="300">
+                    <img src="tablet package.png" alt="Clean Water Impact">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2>Contact Us</h2>
+                <div class="underline"></div>
+                <p>Have questions about our products or services? We'd love to hear from you. Reach out to us using the information below.</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info" data-aos="fade-right" data-aos-duration="1000">
+                    <h3>Get In Touch</h3>
+                    <p>Have questions about our products or services? Reach out to us and our team will get back to you as soon as possible.</p>
+                    
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Address</h4>
+                            <p>Alandi, Pune, Maharashtra, India </p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Phone</h4>
+                            <p>+91 90969 28961</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p>drinkossolution@gmail.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                
+                <div class="contact-form" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                    <form id="contactForm" action="https://formsubmit.co/adityathorat0312@gmail.com" method="POST">
+                      <!-- This will prevent spam -->
+                      <input type="hidden" name="_captcha" value="false">
+                      <!-- Redirect after form submission -->
+                      <input type="hidden" name="_next" value="drinkossolutions.netlify.app/thank-you.html">
+                    
+
+                        <div class="form-group">
+                            <label for="name">Full Name</label><br>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <input type="text" id="subject" name="subject" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Your Message</label>
+                            <textarea id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>                    
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="logo.png" alt="Drinkos Solution">
+                    <p>Drink Safe, Live Well</p>
+                    <p>Drinkos Solution Private Limited is committed to providing innovative water purification solutions that ensure safe drinking water for all.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#products">Products</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#team">Our Team</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <!-- <div class="footer-newsletter">
+                    <h3>Subscribe to Our Newsletter</h3>
+                    <p>Stay updated with our latest products, innovations, and initiatives in the water purification industry.</p>
+                     <form id="newsletterForm">
+                        <input type="email" placeholder="Your Email Address" required>
+                        <button type="submit" class="btn">Subscribe</button>
+                    </form> 
+                </div> -->
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Drinkos Solution Private Limited. All Rights Reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <a href="#home" class="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        // Initialize AOS animation library
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                once: true,
+                offset: 100,
+                duration: 1000
+            });
+
+            // Mobile Navigation
+            const hamburger = document.querySelector('.hamburger');
+            const navLinks = document.querySelector('.nav-links');
+
+            if (hamburger) {
+                hamburger.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    navLinks.classList.toggle('active');
+                });
+            }
+
+            // Close mobile menu when clicking on a nav link
+            const navItems = document.querySelectorAll('.nav-links a');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('active');
+                });
+            });
+
+            // Sticky Header
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('header');
+                header.classList.toggle('scrolled', window.scrollY > 10);
+            });
+
+            // Back to Top Button
+            const backToTopBtn = document.querySelector('.back-to-top');
+            
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    backToTopBtn.classList.add('active');
+                } else {
+                    backToTopBtn.classList.remove('active');
+                }
+            });
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Form Submission with animation
+            const contactForm = document.getElementById('contactForm');
+            const newsletterForm = document.getElementById('newsletterForm');
+
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Add animation class
+                    this.classList.add('submitted');
+                    
+                    // Show success message
+                    const formButton = this.querySelector('button');
+                    const originalText = formButton.textContent;
+                    formButton.innerHTML = '<i class="fas fa-check"></i> Message Sent!';
+                    
+                    setTimeout(() => {
+                        alert('Thank you for your message! We will get back to you soon.');
+                        this.reset();
+                        formButton.textContent = originalText;
+                        this.classList.remove('submitted');
+                    }, 1500);
+                });
+            }
+
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Add animation class
+                    this.classList.add('submitted');
+                    
+                    // Show success message
+                    const formButton = this.querySelector('button');
+                    const originalText = formButton.textContent;
+                    formButton.innerHTML = '<i class="fas fa-check"></i> Subscribed!';
+                    
+                    setTimeout(() => {
+                        alert('Thank you for subscribing to our newsletter!');
+                        this.reset();
+                        formButton.textContent = originalText;
+                        this.classList.remove('submitted');
+                    }, 1500);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
